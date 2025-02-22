@@ -6,5 +6,5 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class TestConfig:
-    SQLALCHEMY_DATABASE_URI = 'sqlite:memory'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     TESTING = True
