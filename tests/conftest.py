@@ -1,9 +1,14 @@
+# Adding to PYTHONPATH
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
+
 import pytest
 from app import create_app, db
 
 @pytest.fixture
 def app():
-    app = create_app(config_class='app.config.TestConfig')
+    app = create_app('app.config.TestConfig')
     with app.app_context():
         db.create_all()
 
