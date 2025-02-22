@@ -13,4 +13,8 @@ def create_app(config_class = 'app.config.Config') -> Flask:
     with app.app_context():
         db.create_all()
 
+    # Blueprints registration
+    from app.routes import auth_bp
+    app.register_blueprint(auth_bp)
+
     return app

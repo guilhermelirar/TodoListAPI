@@ -1,0 +1,36 @@
+#app/routes/auth_routes.py
+from flask import Blueprint, request, Response, jsonify
+
+# Blueprint for register and login routes
+auth_bp = Blueprint('auth', __name__) 
+
+""" POST /register
+{
+  "name": "John Doe",
+  "email": "john@doe.com",
+  "password": "password"
+}
+"""
+
+@auth_bp.route('/register', methods=['POST'])
+def register() -> tuple[Response, int]:
+    # Only accepts application/json
+    if request.mimetype != 'application/json':
+        return jsonify({
+            "message": "Invalid request"
+        }), 400
+   
+    # Required fields
+    name: str = request.get_json().get("name", None)
+    email: str = request.get_json().get("email", None)
+    password: str = request.get_json().get("password", None)
+
+    # Checking if all fields present
+    if not name or not email or not password:
+        return jsonify({
+            "message" : "Missing information"
+        }), 400
+
+    # Checking if invalid fields present
+
+    return jsonify({}), -1
