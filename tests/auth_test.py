@@ -22,3 +22,15 @@ def test_register_with_already_used_email(client: FlaskClient, existing_user):
 
     assert 'message' in response_json
     assert response_json['message'] == 'Email already in use'
+
+def test_register_with_valid_email(client: FlaskClient):
+    response: TestResponse = client.post('/register', json = {
+        "name": "John Doe",
+        "email": "john@doe.com",
+        "password": "password"
+    })
+
+    assert response.status_code == 201
+    response_json = response.get_json()
+
+    assert 'token' in response_json
