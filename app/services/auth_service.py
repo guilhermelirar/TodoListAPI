@@ -2,9 +2,15 @@
 from app.models import User
 from app import db
 from sqlalchemy.exc import IntegrityError
+import jwt, os
+
+TOKEN_SECRET = os.environ.get('TOKEN_SECRET') or 'token_secret'
 
 class UserAlreadyExistsError(Exception):
     pass
+
+def generate_token(id: int, email: str) -> str:
+    return jwt.encode({"id": id, "email": email}, TOKEN_SECRET, algorithm="HS256")
 
 def create_user(name: str, email: str, password: str) -> int:
     new_user: User

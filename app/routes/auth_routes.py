@@ -34,10 +34,15 @@ def register() -> tuple[Response, int]:
 
     new_user_id: int
     try:
-        serv.create_user(name, email, password)
+        new_user_id = serv.create_user(name, email, password)
     except serv.UserAlreadyExistsError as e:
         return jsonify({
             "message": str(e)
         }), 400
 
-    return jsonify({}), -1
+    token: str = serv.generate_token(new_user_id, email)
+    print("New token issued: ", token)
+
+    return jsonify({
+        "token": token 
+    }), 201
