@@ -1,5 +1,6 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify
+from app.services import auth_service as serv
 
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
@@ -31,6 +32,12 @@ def register() -> tuple[Response, int]:
             "message" : "Missing information"
         }), 400
 
-    # Checking if invalid fields present
+    new_user_id: int
+    try:
+        serv.create_user(name, email, password)
+    except serv.UserAlreadyExistsError as e:
+        return jsonify({
+            "message": str(e)
+        }), 400
 
     return jsonify({}), -1
