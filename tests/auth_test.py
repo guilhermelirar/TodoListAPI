@@ -33,4 +33,5 @@ def test_register_with_valid_email(client: FlaskClient):
     assert response.status_code == 201
     response_json = response.get_json()
 
-    assert 'token' in response_json
+    assert 'access_token' in response_json
+    assert 'refresh_token' in response_json
