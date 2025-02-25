@@ -40,9 +40,12 @@ def register() -> tuple[Response, int]:
             "message": str(e)
         }), 400
 
-    token: str = serv.generate_token(new_user_id, email)
-    print("New token issued: ", token)
+    access_token: str = serv.generate_access_token(new_user_id, email)
+    print("New access token issued: ", access_token)
+    refresh_token: str = serv.generate_refresh_token(new_user_id, email)
+    print("New refresh token issued: ", refresh_token)
 
     return jsonify({
-        "token": token 
+        "access_token": access_token,
+        "refresh_token": refresh_token
     }), 201

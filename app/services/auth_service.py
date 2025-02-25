@@ -2,15 +2,27 @@
 from app.models import User
 from app import db
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime, timedelta, timezone
 import jwt, os
 
-TOKEN_SECRET = os.environ.get('TOKEN_SECRET') or 'token_secret'
+ACCESS_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET') or 'acc_token_secret'
+REFRESH_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET') or 'acc_token_secret'
 
 class UserAlreadyExistsError(Exception):
     pass
 
-def generate_token(id: int, email: str) -> str:
-    return jwt.encode({"id": id, "email": email}, TOKEN_SECRET, algorithm="HS256")
+def generate_access_token(id: int, email: str) -> str:
+    return jwt.encode({
+        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=30),
+        "id": id, 
+        "email": email}, ACCESS_TOKEN_SECRET, algorithm="HS256")
+
+def generate_refresh_token(id: int, email: str) -> str:
+    return jwt.encode({
+        "exp": datetime.now(tz=timezone.utc) + timedelta(days=30),
+        "id": id, 
+        "email": email
+    }, REFRESH_TOKEN_SECRET, algorithm="HS256")
 
 def create_user(name: str, email: str, password: str) -> int:
     new_user: User
