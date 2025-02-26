@@ -11,6 +11,9 @@ REFRESH_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET') or 'acc_token_secre
 class UserAlreadyExistsError(Exception):
     pass
 
+class UnauthorizedTokenError(Exception):
+    pass
+
 def generate_access_token(id: int, email: str) -> str:
     return jwt.encode({
         "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=30),
@@ -23,6 +26,18 @@ def generate_refresh_token(id: int, email: str) -> str:
         "id": id, 
         "email": email
     }, REFRESH_TOKEN_SECRET, algorithm="HS256")
+
+def user_from_refresh_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, 
+                          REFRESH_TOKEN_SECRET, 
+                          algorithms="HS256")
+    
+    except jwt.InvalidTokenError:
+        raise UnauthorizedTokenError("Unauthorized")
+
+        
+        
 
 def create_user(name: str, email: str, password: str) -> int:
     new_user: User
