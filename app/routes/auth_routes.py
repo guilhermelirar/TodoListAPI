@@ -13,6 +13,27 @@ auth_bp = Blueprint('auth', __name__)
 }
 """
 
+@auth_bp.route('/refresh', methods=['POST'])
+def refresh() -> tuple[Response, int]:
+    headers = request.headers
+    auth_header = headers.get("authorization")
+    if not auth_header:
+        return jsonify({
+            "message": "Unauthorized"
+        }), 401
+
+    token = auth_header.split(' ')[1]
+    
+    try:
+        id, email = serv.user_from_refresh_token(token)
+        print(id, email)
+        return jsonify(), 0
+    
+    except serv.UnauthorizedTokenError as e:
+        return jsonify({
+            "message": str(e)
+        }), 401
+
 @auth_bp.route('/register', methods=['POST'])
 def register() -> tuple[Response, int]:
     # Only accepts application/json
