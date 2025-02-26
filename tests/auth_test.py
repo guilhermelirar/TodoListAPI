@@ -37,7 +37,7 @@ def test_register_with_valid_email(client: FlaskClient):
     assert 'refresh_token' in response_json
 
 def test_invalid_refresh_token_rejected(client: FlaskClient):
-    headers = {'Authorization': 'Beared invalid_token'}
+    headers = {'Authorization': 'Bearer invalid_token'}
     response: TestResponse = client.post('/refresh', headers=headers)
 
     assert response.status_code == 401
