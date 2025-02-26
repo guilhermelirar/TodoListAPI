@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
 import pytest
 from app import create_app, db
 from app.models import User
+from app.services.auth_service import generate_access_token, generate_refresh_token
 
 @pytest.fixture
 def app():
@@ -36,3 +37,10 @@ def existing_user(app):
         db.session.commit()
 
     return new_user
+
+@pytest.fixture
+def existing_user_tokens(existing_user: User):
+    return {
+        "access_token": generate_access_token(existing_user.id, existing_user.email),
+        "refresh_token": generate_refresh_token(existing_user.id, existing_user.email),
+    }
