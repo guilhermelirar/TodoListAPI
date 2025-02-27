@@ -6,7 +6,9 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/.."))
 import pytest
 from app import create_app, db
 from app.models import User
-from app.services.auth_service import generate_access_token, generate_refresh_token
+import jwt
+from datetime import datetime
+from app.services.auth_service import * 
 
 @pytest.fixture
 def app():
@@ -26,8 +28,8 @@ def client(app):
 
 @pytest.fixture
 def existing_user(app): 
+    
     new_user: User
-
     with app.app_context():
         db.session.query(User).filter_by(email="existing@email.com").delete()
         db.session.commit()
@@ -35,7 +37,8 @@ def existing_user(app):
         new_user = User("Existing", "existing@email.com", "password123")
         db.session.add(new_user)
         db.session.commit()
-
+        db.session.refresh(new_user)
+        
     return new_user
 
 @pytest.fixture
@@ -44,3 +47,16 @@ def existing_user_tokens(existing_user: User):
         "access_token": generate_access_token(existing_user.id, existing_user.email),
         "refresh_token": generate_refresh_token(existing_user.id, existing_user.email),
     }
+
+def generate_expired_token(key, id, email):
+    return jwt.encode({
+        "exp": datetime.now(tz=timezone.utc) - timedelta(days=30),
+        "id": id, 
+        "email": email
+    }, key, algorithm="HS256")
+
+@pytest.fixture
+def expired_refresh_token(existing_user: User):
+    return generate_expired_token(REFRESH_TOKEN_SECRET, 
+                                  existing_user.id, 
+                                  existing_user.email)
