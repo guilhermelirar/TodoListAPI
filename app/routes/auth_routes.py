@@ -25,8 +25,7 @@ def refresh() -> tuple[Response, int]:
     token = auth_header.split(' ')[1]
     
     try:
-        id, email = serv.user_from_refresh_token(token)
-        print(id, email)
+        data = serv.user_from_refresh_token(token)
         return jsonify(), 0
     
     except serv.UnauthorizedTokenError as e:

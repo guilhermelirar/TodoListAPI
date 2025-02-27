@@ -33,11 +33,12 @@ def user_from_refresh_token(token: str) -> dict:
                           REFRESH_TOKEN_SECRET, 
                           algorithms="HS256")
     
+    except jwt.ExpiredSignatureError:
+        raise UnauthorizedTokenError("Token expired, please login again.")
+
     except jwt.InvalidTokenError:
         raise UnauthorizedTokenError("Unauthorized")
-
-        
-        
+    
 
 def create_user(name: str, email: str, password: str) -> int:
     new_user: User
