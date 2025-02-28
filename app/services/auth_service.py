@@ -68,10 +68,10 @@ def create_user(name: str, email: str, password: str) -> int:
 
 def login(email, password) -> Union[dict, None]:
     user = db.session.query(User).filter(User.email == email).first()
-    if user == None:
+    if user == None or not user.check_password(password):
         return None
-    else: 
-        return {
-            "access_token": generate_access_token(user.id, user.email),
-            "refresh_token": generate_refresh_token(user.id, user.email)
-        }
+    
+    return {
+        "access_token": generate_access_token(user.id, user.email),
+        "refresh_token": generate_refresh_token(user.id, user.email)
+    }
