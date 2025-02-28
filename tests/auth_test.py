@@ -57,3 +57,12 @@ def test_expired_refresh_token_rejected(client: FlaskClient, expired_refresh_tok
 
     assert 'message' in response_json
     assert response_json['message'] == 'Token expired, please login again.'
+
+def test_valid_refresh_token_accepted(client: FlaskClient, valid_refresh_token: str):
+    headers = {'Authorization': f'Bearer {valid_refresh_token}'}
+    response: TestResponse = client.post('/refresh', headers=headers)
+
+    assert response.status_code == 200
+    response_json = response.get_json()
+
+    assert 'token' in response_json

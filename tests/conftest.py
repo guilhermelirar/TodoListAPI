@@ -60,3 +60,11 @@ def expired_refresh_token(existing_user: User):
     return generate_expired_token(REFRESH_TOKEN_SECRET, 
                                   existing_user.id, 
                                   existing_user.email)
+
+@pytest.fixture
+def valid_refresh_token():
+    return jwt.encode({
+        "exp": datetime.now(tz=timezone.utc) + timedelta(days=30),
+        "id": 1, 
+        "email": "auser@email.com"
+    }, REFRESH_TOKEN_SECRET, algorithm="HS256")
