@@ -5,14 +5,6 @@ from app.services import auth_service as serv
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
 
-""" POST /register
-{
-  "name": "John Doe",
-  "email": "john@doe.com",
-  "password": "password"
-}
-"""
-
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
     headers = request.headers
@@ -37,6 +29,14 @@ def refresh() -> tuple[Response, int]:
             "message": str(e)
         }), 401
 
+
+""" POST /register
+{
+  "name": "John Doe",
+  "email": "john@doe.com",
+  "password": "password"
+}
+"""
 @auth_bp.route('/register', methods=['POST'])
 def register() -> tuple[Response, int]:
     # Only accepts application/json
@@ -74,6 +74,14 @@ def register() -> tuple[Response, int]:
         "refresh_token": refresh_token
     }), 201
 
+
+"""
+POST /login
+{
+  "email": "john@doe.com",
+  "password": "password"
+}
+"""
 @auth_bp.route('/login', methods=['POST'])
 def login() -> tuple[Response, int]:
     # Posssible invalid request
@@ -91,6 +99,12 @@ def login() -> tuple[Response, int]:
         return jsonify({
             "message" : "Missing information"
         }), 400
+
+    tokens = serv.login(email, password)
+    if not tokens:
+        return jsonify({
+            "message": "Invalid credentials"
+        }), 404
 
     return jsonify({
     }), 0

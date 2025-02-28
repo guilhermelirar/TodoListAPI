@@ -1,4 +1,5 @@
 #app/services/auth_service.py
+from typing import Union
 from app.models import User
 from app import db
 from sqlalchemy.exc import IntegrityError
@@ -14,11 +15,13 @@ class UserAlreadyExistsError(Exception):
 class UnauthorizedTokenError(Exception):
     pass
 
+
 def generate_access_token(id: int, email: str) -> str:
     return jwt.encode({
         "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=30),
         "id": id, 
         "email": email}, ACCESS_TOKEN_SECRET, algorithm="HS256")
+
 
 def generate_refresh_token(id: int, email: str) -> str:
     return jwt.encode({
@@ -26,6 +29,7 @@ def generate_refresh_token(id: int, email: str) -> str:
         "id": id, 
         "email": email
     }, REFRESH_TOKEN_SECRET, algorithm="HS256")
+
 
 def user_from_refresh_token(token: str) -> dict:
     try:
@@ -61,3 +65,13 @@ def create_user(name: str, email: str, password: str) -> int:
     except Exception as e:
         print("Generic error:", e.args)
         raise RuntimeError("Unknown error ocurred while creating the user")
+
+def login(email, password) -> Union[dict, None]:
+    user = db.session.query(User).filter(User.email == email).first()
+    if user == None:
+        return None
+    else: 
+        return {
+            "access_token": generate_access_token(user.id, user.email),
+            "refresh_token": generate_refresh_token(user.id, user.email)
+        }
