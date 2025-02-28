@@ -26,7 +26,11 @@ def refresh() -> tuple[Response, int]:
     
     try:
         data = serv.user_from_refresh_token(token)
-        return jsonify(), 0
+        new_access_token = serv.generate_access_token(data["id"], data["email"])
+
+        return jsonify({
+            "token": new_access_token
+        }), 200
     
     except serv.UnauthorizedTokenError as e:
         return jsonify({
