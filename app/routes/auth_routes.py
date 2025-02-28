@@ -73,3 +73,24 @@ def register() -> tuple[Response, int]:
         "access_token": access_token,
         "refresh_token": refresh_token
     }), 201
+
+@auth_bp.route('/login', methods=['POST'])
+def login() -> tuple[Response, int]:
+    # Posssible invalid request
+    if request.mimetype != 'application/json':
+        return jsonify({
+            "message": "Invalid request"
+        }), 400
+
+    # Required fields
+    email: str = request.get_json().get("email", None)
+    password: str = request.get_json().get("password", None)
+    
+    # Checking if all fields present
+    if not email or not password:
+        return jsonify({
+            "message" : "Missing information"
+        }), 400
+
+    return jsonify({
+    }), 0
