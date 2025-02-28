@@ -106,5 +106,4 @@ def login() -> tuple[Response, int]:
             "message": "Invalid credentials"
         }), 404
 
-    return jsonify({
-    }), 0
+    return jsonify(tokens), 200
