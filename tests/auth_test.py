@@ -58,6 +58,7 @@ def test_expired_refresh_token_rejected(client: FlaskClient, expired_refresh_tok
     assert 'message' in response_json
     assert response_json['message'] == 'Token expired, please login again.'
 
+
 def test_valid_refresh_token_accepted(client: FlaskClient, valid_refresh_token: str):
     headers = {'Authorization': f'Bearer {valid_refresh_token}'}
     response: TestResponse = client.post('/refresh', headers=headers)
@@ -66,6 +67,7 @@ def test_valid_refresh_token_accepted(client: FlaskClient, valid_refresh_token: 
     response_json = response.get_json()
 
     assert 'token' in response_json
+
 
 def test_login_with_missing_fields(client: FlaskClient):
     response: TestResponse = client.post('/login')
@@ -79,3 +81,23 @@ def test_login_with_missing_fields(client: FlaskClient):
     response = client.post('/login', json={})
     assert response.status_code == 400
     assert response.get_json()['message'] == 'Missing information'
+
+
+def test_login_with_nonexistant_user(client: FlaskClient):
+    response: TestResponse = client.post('/login', json={
+        "email": "inexist@email.com",
+        "password": "password123"
+    })
+
+    assert response.status_code == 404
+    assert response.get_json()['message'] == 'Invalid credentials'
+
+
+def test_login_with_wrong_password(client: FlaskClient, existing_user):
+    response: TestResponse = client.post('/login', json={
+        "email": existing_user.email,
+        "password": "wrongpassword"
+    })
+
+    assert response.status_code == 404
+    assert response.get_json()['message'] == 'Invalid credentials'
