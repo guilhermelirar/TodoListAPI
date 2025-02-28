@@ -12,6 +12,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 ## Features
 
 - User creation with `POST /register` route
+- User login with `POST /login` route
 - Refresh token mechanism for authentication
 - Automated tests with pytest
 
