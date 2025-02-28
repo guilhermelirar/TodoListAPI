@@ -101,3 +101,12 @@ def test_login_with_wrong_password(client: FlaskClient, existing_user):
 
     assert response.status_code == 404
     assert response.get_json()['message'] == 'Invalid credentials'
+
+def test_with_valid_credentials(client: FlaskClient, existing_user):
+    response: TestResponse = client.post('/login', json={
+        "email": existing_user.email,
+        "password": "password123"
+    })
+
+    assert response.status_code == 200
+    assert len(response.get_json()) == 2
