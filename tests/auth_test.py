@@ -66,3 +66,16 @@ def test_valid_refresh_token_accepted(client: FlaskClient, valid_refresh_token: 
     response_json = response.get_json()
 
     assert 'token' in response_json
+
+def test_login_with_missing_fields(client: FlaskClient):
+    response: TestResponse = client.post('/login')
+
+    assert response.status_code == 400
+    response_json = response.get_json()
+
+    assert 'message' in response_json
+    assert response_json['message'] == 'Invalid request'
+
+    response = client.post('/login', json={})
+    assert response.status_code == 400
+    assert response.get_json()['message'] == 'Missing information'
