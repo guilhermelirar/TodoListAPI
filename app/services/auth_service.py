@@ -32,9 +32,15 @@ def generate_refresh_token(id: int, email: str) -> str:
 
 
 def user_from_refresh_token(token: str) -> dict:
+    return user_from_token(token, REFRESH_TOKEN_SECRET)
+
+def user_from_access_token(token: str) -> dict:
+    return user_from_token(token, ACCESS_TOKEN_SECRET)
+
+def user_from_token(token: str, secret: str) -> dict:
     try:
         return jwt.decode(token, 
-                          REFRESH_TOKEN_SECRET, 
+                          secret, 
                           algorithms="HS256")
     
     except jwt.ExpiredSignatureError:
