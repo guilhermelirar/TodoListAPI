@@ -1,5 +1,4 @@
 from flask.testing import FlaskClient
-import jwt
 from werkzeug.test import TestResponse
 
 def test_register_with_missing_fields(client: FlaskClient):
