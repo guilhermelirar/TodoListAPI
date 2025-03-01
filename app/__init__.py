@@ -14,7 +14,8 @@ def create_app(config_class = 'app.config.Config') -> Flask:
         db.create_all()
 
     # Blueprints registration
-    from app.routes import auth_bp
+    from app.routes import auth_bp, todo_bp
     app.register_blueprint(auth_bp)
+    app.register_blueprint(todo_bp)
 
     return app
