@@ -28,7 +28,6 @@ def client(app):
 
 @pytest.fixture
 def existing_user(app): 
-    
     new_user: User
     with app.app_context():
         db.session.query(User).filter_by(email="existing@email.com").delete()
