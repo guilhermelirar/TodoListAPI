@@ -3,6 +3,12 @@ from sqlalchemy.exc import IntegrityError
 from app.models import Task
 from app import db
 
+class PermissionError(Exception):
+    pass
+
+class TaskNotFoundError(Exception):
+    pass
+
 def create_task(user_id: int, data):
     new_task: Task
    
@@ -27,4 +33,33 @@ def create_task(user_id: int, data):
         db.session.rollback()
         raise RuntimeError("An unexpected error has ocurred")
     
-    return new_task.to_dict() 
+    return new_task.to_dict()
+
+
+
+
+def update_task(user_id: int, task_id, data: dict) -> dict:
+    """ 
+    Updates task and return new data, or throw exceptions 
+    if task not found or user doesn't have the permission
+    """
+    task = db.session.query(Task)\
+    .filter(Task.id == task_id).first()
+
+    if not task:
+        raise TaskNotFoundError("Task not found")
+
+    if task.user_id != user_id:
+        raise PermissionError
+
+    task.title = data["title"]
+    task.description = data["description"]
+    updated = {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description
+    }
+    db.session.commit()
+    return updated
+
+
