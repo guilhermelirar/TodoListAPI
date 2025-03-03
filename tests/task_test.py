@@ -35,7 +35,7 @@ def test_create_task_with_success(client: FlaskClient, existing_user_tokens: dic
     res_json = response.get_json()
     assert len(res_json) == 3 
 
-def test_update_inexistant_task(client: FlaskClient, existing_user_tokens: dict):
+def test_update_nonexistent_task(client: FlaskClient, existing_user_tokens: dict):
     headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
     response: TestResponse = client.put("/todos/0", json=task_2, headers=headers)
 
