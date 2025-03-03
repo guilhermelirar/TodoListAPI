@@ -1,5 +1,6 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify
+from app.utils import require_auth 
 from app.services.auth_service import user_from_access_token, UnauthorizedTokenError
 import app.services.task_service as serv
 
@@ -13,28 +14,12 @@ POST /todos
 }
 """
 @todo_bp.route('/todos', methods=['POST'])
-def todos() -> tuple[Response, int]:
-    auth_header = request.headers.get('authorization')
-    if not auth_header or len(auth_header.split()) != 2:
-        return jsonify({
-            "message": "Unauthorized"
-        }), 401
-
-    token: str = auth_header.split()[1]
-    
+@require_auth
+def todos(user: dict) -> tuple[Response, int]:
     if not request.is_json:
         return jsonify({
             "message": "Invalid request"
         }), 400
-    
-    user: dict
-
-    try:
-        user = user_from_access_token(token)
-    except UnauthorizedTokenError as e:
-        return jsonify({
-            "message": str(e)
-        }), 401
 
     data = request.get_json()
     if not data or not all(k in data for k in ("title", "description")):
@@ -54,4 +39,20 @@ def todos() -> tuple[Response, int]:
     except RuntimeError as re:
         return jsonify({
             "message": str(re)
-        }), 500 
+        }), 500
+
+
+"""
+PUT /todos/1
+{
+  "title": "Buy groceries",
+  "description": "Buy milk, eggs, bread, and cheese"
+}
+"""
+@todo_bp.route("/todos/<int:id>", methods=['PUT'])
+@require_auth
+def update_task(user: dict, id: int): 
+    return jsonify({
+        "message": id
+    }), 0
+
