@@ -32,6 +32,4 @@ def test_create_task_with_success(client: FlaskClient, existing_user_tokens: dic
     assert response.status_code == 201
     # Details of created item are present
     res_json = response.get_json()
-    assert len(res_json) == 3
-
-
+    assert len(res_json) == 3 

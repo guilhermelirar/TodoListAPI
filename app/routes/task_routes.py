@@ -45,5 +45,13 @@ def todos() -> tuple[Response, int]:
     try:
         created_item_details = serv.create_task(user["id"], data)
         return jsonify(created_item_details), 201
-    except ValueError:
-        return jsonify(), 0
+    
+    except ValueError as e:
+        return jsonify({
+            "message": str(e)
+        }), 400
+
+    except RuntimeError as re:
+        return jsonify({
+            "message": str(re)
+        }), 500 
