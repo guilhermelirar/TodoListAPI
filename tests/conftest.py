@@ -67,3 +67,9 @@ def valid_refresh_token():
         "id": 1, 
         "email": "auser@email.com"
     }, REFRESH_TOKEN_SECRET, algorithm="HS256")
+
+
+@pytest.fixture
+def alt_valid_access_token():
+    """ Valid access token, but not related to any user """
+    return generate_access_token(1, "email@email.com")
