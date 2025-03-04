@@ -62,7 +62,7 @@ def update_task(user: dict, id: int):
     
     except serv.PermissionError:
         return jsonify({
-            "messaage": "Forbidden"
+            "message": "Forbidden"
         }), 403
     
     except serv.TaskNotFoundError as e:

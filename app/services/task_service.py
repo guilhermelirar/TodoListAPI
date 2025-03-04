@@ -32,7 +32,7 @@ def create_task(user_id: int, data):
     except:
         db.session.rollback()
         raise RuntimeError("An unexpected error has ocurred")
-    
+   
     return new_task.to_dict()
 
 
