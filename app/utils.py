@@ -27,6 +27,6 @@ def require_auth(f):
                 "message": str(e)
             }), 401
         
-        return f(user, *args, *kwargs)
+        return f(user, *args, **kwargs)
 
     return decorated_function
