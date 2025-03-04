@@ -72,4 +72,4 @@ def valid_refresh_token():
 @pytest.fixture
 def alt_valid_access_token():
     """ Valid access token, but not related to any user """
-    return generate_access_token(1, "email@email.com")
+    return generate_access_token(-1, "email@email.com")
