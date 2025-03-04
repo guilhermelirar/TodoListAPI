@@ -55,7 +55,7 @@ def test_update_task_not_owned(client: FlaskClient,
     # Creates a valid task
     task_id: int = client.post("/todos", 
                                json=task, headers=headers).get_json()["id"]
-   
+    
     # "User" with different id from the owner
     headers["Authorization"] = f"Bearer {alt_valid_access_token}"
 
@@ -65,3 +65,16 @@ def test_update_task_not_owned(client: FlaskClient,
     # User does not have permission (didn't create the resource)
     assert response.status_code == 403 # Forbidden
     assert response.get_json()["message"] == "Forbidden"
+
+
+def test_update_task_with_success(client: FlaskClient, existing_user_tokens: dict):
+    headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
+    # Creates a valid task
+    task_id: int = client.post("/todos", 
+                               json=task, headers=headers).get_json()["id"]
+    response: TestResponse = client.put(f"/todos/{task_id}", 
+                                        json=task_2, headers=headers)
+
+    # Task is found and update is done
+    assert response.status_code == 200
+    assert response.get_json() == {"id": task_id, **task_2}
