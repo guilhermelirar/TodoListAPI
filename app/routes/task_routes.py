@@ -75,6 +75,4 @@ def update_task(user: dict, id: int):
             "message": "An unexpected error has ocurred"
         }), 500
 
-    return jsonify({
-        "message": new_data
-    }), 200
+    return jsonify(new_data), 200
