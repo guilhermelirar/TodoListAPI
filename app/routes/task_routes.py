@@ -76,3 +76,19 @@ def update_task(user: dict, id: int):
         }), 500
 
     return jsonify(new_data), 200
+
+
+"""
+DELETE /todos/1
+"""
+@todo_bp.route('/todos/<int:id>', methods=['DELETE'])
+@require_auth
+def delete_task(user: dict, id: int) -> tuple[Response, int]:
+    try:
+        serv.delete_task(user["id"], id)
+    except serv.TaskNotFoundError as e:
+        return jsonify({
+            "message": str(e)
+        }), 404
+
+    return jsonify(), 0

@@ -63,3 +63,9 @@ def update_task(user_id: int, task_id, data: dict) -> dict:
     return updated
 
 
+def delete_task(user_id: int, task_id: int):
+    task = db.session.query(Task)\
+    .filter(Task.id == task_id).first()
+
+    if not task:
+        raise TaskNotFoundError("Task not found")
