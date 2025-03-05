@@ -86,9 +86,16 @@ DELETE /todos/1
 def delete_task(user: dict, id: int) -> tuple[Response, int]:
     try:
         serv.delete_task(user["id"], id)
+    
     except serv.TaskNotFoundError as e:
         return jsonify({
             "message": str(e)
         }), 404
+    
+    except serv.PermissionError as e:
+        return jsonify({
+            "message": "Forbidden"
+        }), 403
+
 
     return jsonify(), 0

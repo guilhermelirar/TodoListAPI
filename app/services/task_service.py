@@ -69,3 +69,6 @@ def delete_task(user_id: int, task_id: int):
 
     if not task:
         raise TaskNotFoundError("Task not found")
+
+    if task.user_id != user_id:
+        raise PermissionError
