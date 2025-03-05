@@ -2,8 +2,6 @@
 RESTful API built with Python and Flask to allow users to manage their to-do list. 
 Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-list-api) from roadmap.sh. For learning purpose. 
 
-*This project is a work in progress. Currently only part of the authentication and account services are implemented.*
-
 ![To-do List API Project Idea by roadmap.sh](https://assets.roadmap.sh/guest/todo-list-api-bsrdd.png)
 (Image from from the project idea page at roadmap.sh)
 
