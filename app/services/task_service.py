@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from app.models import Task
 from app import db
 
-class PermissionError(Exception):
+class TaskPermissionError(Exception):
     pass
 
 class TaskNotFoundError(Exception):
@@ -50,7 +50,7 @@ def update_task(user_id: int, task_id, data: dict) -> dict:
         raise TaskNotFoundError("Task not found")
 
     if task.user_id != user_id:
-        raise PermissionError
+        raise TaskPermissionError
 
     task.title = data["title"]
     task.description = data["description"]
@@ -71,4 +71,7 @@ def delete_task(user_id: int, task_id: int):
         raise TaskNotFoundError("Task not found")
 
     if task.user_id != user_id:
-        raise PermissionError
+        raise TaskPermissionError
+
+    db.session.delete(task)
+    db.session.commit()

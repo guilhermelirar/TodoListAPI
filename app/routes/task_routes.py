@@ -60,7 +60,7 @@ def update_task(user: dict, id: int):
     try:
         new_data = serv.update_task(user["id"], id, data)
     
-    except serv.PermissionError:
+    except serv.TaskPermissionError:
         return jsonify({
             "message": "Forbidden"
         }), 403
@@ -92,10 +92,14 @@ def delete_task(user: dict, id: int) -> tuple[Response, int]:
             "message": str(e)
         }), 404
     
-    except serv.PermissionError as e:
+    except serv.TaskPermissionError as e:
         return jsonify({
             "message": "Forbidden"
         }), 403
 
+    except Exception:
+        return jsonify({
+            "message": "An unexpected error has ocurred"
+        }), 500
 
-    return jsonify(), 0
+    return jsonify(), 204
