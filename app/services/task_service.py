@@ -9,6 +9,28 @@ class TaskPermissionError(Exception):
 class TaskNotFoundError(Exception):
     pass
 
+
+def get_task_for_modification(user_id: int, task_id: int) -> Task:
+    """
+    Fetch task from database using task_id, for further modification
+    by other functions (update and delete). Raise exceptions
+    if not found (TaskNotFoundError), or if user_id does not match
+    with the resource owner (TaskPermissionError).
+    """
+    task = db.session.query(Task)\
+    .filter(Task.id == task_id)\
+    .with_for_update()\
+    .first()
+
+    if not task:
+        raise TaskNotFoundError("Task not found")
+
+    if task.user_id != user_id:
+        raise TaskPermissionError
+
+    return task
+
+
 def create_task(user_id: int, data):
     new_task: Task
    
@@ -36,21 +58,12 @@ def create_task(user_id: int, data):
     return new_task.to_dict()
 
 
-
-
 def update_task(user_id: int, task_id, data: dict) -> dict:
     """ 
-    Updates task and return new data, or throw exceptions 
-    if task not found or user doesn't have the permission
+    Updates task title and description. Doesn't handle
+    exceptions raised by get_task_for_modification
     """
-    task = db.session.query(Task)\
-    .filter(Task.id == task_id).first()
-
-    if not task:
-        raise TaskNotFoundError("Task not found")
-
-    if task.user_id != user_id:
-        raise TaskPermissionError
+    task = get_task_for_modification(user_id, task_id)
 
     task.title = data["title"]
     task.description = data["description"]
@@ -64,14 +77,10 @@ def update_task(user_id: int, task_id, data: dict) -> dict:
 
 
 def delete_task(user_id: int, task_id: int):
-    task = db.session.query(Task)\
-    .filter(Task.id == task_id).first()
-
-    if not task:
-        raise TaskNotFoundError("Task not found")
-
-    if task.user_id != user_id:
-        raise TaskPermissionError
-
+    """ 
+    Deletes a task from database. Doesn't handle
+    exceptions raised by get_task_for_modification
+    """
+    task = get_task_for_modification(user_id, task_id)
     db.session.delete(task)
     db.session.commit()
