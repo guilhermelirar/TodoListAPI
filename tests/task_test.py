@@ -103,3 +103,18 @@ def test_delete_not_owned_task(client: FlaskClient, existing_user_tokens: dict, 
     # Forbidden
     assert response.status_code == 403
     assert response.get_json()["message"] == "Forbidden"
+
+
+def test_delete_task_with_success(client: FlaskClient, existing_user_tokens: dict):
+    headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
+    task_id = client.post("/todos", json=task, headers=headers).get_json()["id"]
+
+    # Deleting the task 
+    response: TestResponse = client.delete(f"/todos/{task_id}", 
+                                           headers=headers)
+    
+    # Success
+    assert response.status_code == 204
+
+    # Task does not exist
+    assert client.delete(f"/todos/{task_id}", headers=headers).status_code == 404
