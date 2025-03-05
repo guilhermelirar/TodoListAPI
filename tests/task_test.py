@@ -78,3 +78,14 @@ def test_update_task_with_success(client: FlaskClient, existing_user_tokens: dic
     # Task is found and update is done
     assert response.status_code == 200
     assert response.get_json() == {"id": task_id, **task_2}
+
+
+def test_delete_non_existent_task(client: FlaskClient, existing_user_tokens: dict):
+    headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
+    # Try do delete a task that does not exist
+    response: TestResponse = client.delete("/todos/0", 
+                                           headers=headers)
+    
+    # Task not found
+    assert response.status_code == 404 
+    assert response.get_json()["message"] == "Task not found"
