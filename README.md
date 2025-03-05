@@ -11,10 +11,11 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 
 ## Features
 
-- User creation with `POST /register` endpoint
-- User login with `POST /login` endpoint
+- Create user with `POST /register` endpoint
+- Login with `POST /login` endpoint
 - Create to-do item with `POST /todos` endpoint
 - Update to-do item with `PUT /todos/<int:id>` endpoint
+- Delete to-do item with `DELETE /todos/<int:id>` endpoint
 - Refresh token mechanism for authentication
 - Automated tests with pytest
 
