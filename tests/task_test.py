@@ -89,3 +89,17 @@ def test_delete_non_existent_task(client: FlaskClient, existing_user_tokens: dic
     # Task not found
     assert response.status_code == 404 
     assert response.get_json()["message"] == "Task not found"
+
+
+def test_delete_not_owned_task(client: FlaskClient, existing_user_tokens: dict, alt_valid_access_token: str):
+    headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
+    task_id = client.post("/todos", json=task, headers=headers).get_json()["id"]
+
+    # Try do delete a task without permission
+    headers["Authorization"] = f"Bearer {alt_valid_access_token}"
+    response: TestResponse = client.delete(f"/todos/{task_id}", 
+                                           headers=headers)
+    
+    # Forbidden
+    assert response.status_code == 403
+    assert response.get_json()["message"] == "Forbidden"
