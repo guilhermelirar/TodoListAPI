@@ -1,6 +1,6 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify
-from app.utils import require_auth 
+from app.utils import require_auth, validate_query_parameters
 import app.services.task_service as serv
 
 todo_bp = Blueprint('todos', __name__)
@@ -111,24 +111,9 @@ GET /todos?page=1&limit=10
 @todo_bp.route('/todos', methods=['GET'])
 @require_auth
 def get_tasks(user: dict):
-    errors = []
-    allowed_params = {"page", "limit"}
-    received_params = set(request.args.keys())
-    extra_params = received_params - allowed_params
+    valid_query, errors = validate_query_parameters()
     
-    page = int(request.args.get("page", "1"))
-    limit = int(request.args.get("limit", "10"))
-
-    if page < 1:
-        errors.append(f"Invalid value for page '{page}' (should be higher than 0)")
-
-    if limit < 1:
-        errors.append(f"Invalid value for limit '{limit}' (should be higher than 0)")
-    
-    if extra_params:
-        errors.append(f"Unexpected parameters: {', '.join(extra_params)}")
-    
-    if errors != []:
+    if not valid_query:
         return jsonify({
             "message": "Invalid request",
             "errors": errors
