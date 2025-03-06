@@ -1,5 +1,6 @@
 from flask.testing import FlaskClient
 from werkzeug.test import TestResponse
+from werkzeug.utils import header_property
 
 task = { "title": "Buy groceries", "description": "Buy milk, eggs, and bread" }
 task_2 = { "title": "Buy groceries", "description": "Buy milk, eggs, bread and cheese" }
@@ -126,3 +127,20 @@ def test_get_todos_without_authentication(client: FlaskClient):
     # Unauthorized (doesn't have auth header)
     assert response.status_code == 401
     assert response.get_json()["message"] == "Unauthorized"
+
+
+def test_get_todos_with_invalid_args(client: FlaskClient, 
+                                     access_token_of_user_with_tasks: str):
+    headers = {"Authorization": f"Bearer {access_token_of_user_with_tasks}"}
+    response: TestResponse = client.get(f"/todos?page=-1&limit=0&invalid=invalid",
+                                        headers=headers)
+    
+    # Bad request (invalid arguments)
+    assert response.status_code == 400
+    assert response.get_json()["message"] == "Invalid request"
+    print(response.get_json())
+    assert response.get_json()["errors"] == [
+        "Invalid value for page '-1' (should be higher than 0)",
+        "Invalid value for limit '0' (should be higher than 0)",
+        "Unexpected parameters: invalid"
+    ]
