@@ -73,3 +73,28 @@ def valid_refresh_token():
 def alt_valid_access_token():
     """ Valid access token, but not related to any user """
     return generate_access_token(-1, "email@email.com")
+
+
+@pytest.fixture
+def access_token_of_user_with_tasks(existing_user_tokens, app):
+    """ 
+    Extends user creation fixture, creating 
+    two tasks for exibition 
+    """
+    access_token: str =  existing_user_tokens["access_token"]
+    from app.services.task_service import create_task
+    from app.services.auth_service import user_from_access_token
+    user_id = int(user_from_access_token(access_token)["id"])
+    
+    with app.app_context(): 
+        create_task(user_id,  {
+            "title": "Buy groceries", 
+            "description": "Buy milk, eggs, bread"
+        })
+    
+        create_task(user_id,  {
+        "title": "Pay bills",
+        "description": "Pay electricity and water bills"    
+        })
+
+        return access_token
