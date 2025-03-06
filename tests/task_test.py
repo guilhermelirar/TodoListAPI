@@ -118,3 +118,11 @@ def test_delete_task_with_success(client: FlaskClient, existing_user_tokens: dic
 
     # Task does not exist
     assert client.delete(f"/todos/{task_id}", headers=headers).status_code == 404
+
+
+def test_get_todos_without_authentication(client: FlaskClient):
+    response: TestResponse = client.get(f"/todos")
+    
+    # Unauthorized (doesn't have auth header)
+    assert response.status_code == 401
+    assert response.get_json()["message"] == "Unauthorized"
