@@ -30,3 +30,27 @@ def require_auth(f):
         return f(user, *args, **kwargs)
 
     return decorated_function
+
+
+def validate_query_parameters():
+    errors = []
+    allowed_params = {"page", "limit"}
+    received_params = set(request.args.keys())
+    extra_params = received_params - allowed_params
+    
+    page = int(request.args.get("page", "1"))
+    limit = int(request.args.get("limit", "10"))
+
+    if page < 1:
+        errors.append(f"Invalid value for page '{page}' (should be higher than 0)")
+
+    if limit < 1:
+        errors.append(f"Invalid value for limit '{limit}' (should be higher than 0)")
+    
+    if extra_params:
+        errors.append(f"Unexpected parameters: {', '.join(extra_params)}")
+
+    if errors == []:
+        return True, None
+    
+    return False, errors
