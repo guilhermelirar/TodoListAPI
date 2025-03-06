@@ -103,3 +103,12 @@ def delete_task(user: dict, id: int) -> tuple[Response, int]:
         }), 500
 
     return jsonify(), 204
+
+
+"""
+GET /todos?page=1&limit=10
+"""
+@todo_bp.route('/todos', methods=['GET'])
+@require_auth
+def get_tasks(user: dict):
+    return jsonify(), 0
