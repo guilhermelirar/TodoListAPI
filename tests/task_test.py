@@ -1,3 +1,4 @@
+from flask import request
 from flask.testing import FlaskClient
 from werkzeug.test import TestResponse
 from werkzeug.utils import header_property
@@ -144,3 +145,17 @@ def test_get_todos_with_invalid_args(client: FlaskClient,
         "Invalid value for limit '0' (should be higher than 0)",
         "Unexpected parameters: invalid"
     ]
+
+
+def test_get_todos_with_valid_request(client: FlaskClient, 
+                                     access_token_of_user_with_tasks: str):
+    headers = {"Authorization": f"Bearer {access_token_of_user_with_tasks}"}
+    response: TestResponse = client.get(f"/todos?page=1&limit=10",
+                                        headers=headers)
+
+    # Successfull request
+    assert response.status_code == 200
+    assert len(response.get_json()["data"]) == 2
+    assert response.get_json()["page"] == 1
+    assert response.get_json()["limit"] == 10
+    assert response.get_json()["total"] == 2
