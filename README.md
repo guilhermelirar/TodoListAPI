@@ -14,6 +14,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - Create to-do item with `POST /todos` endpoint
 - Update to-do item with `PUT /todos/<int:id>` endpoint
 - Delete to-do item with `DELETE /todos/<int:id>` endpoint
+- Get to-do items in paginated response with `GET /todos/?page=1&limit=10`
 - Refresh token mechanism for authentication
 - Automated tests with pytest
 
