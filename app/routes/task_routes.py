@@ -122,9 +122,9 @@ def get_tasks(user: dict):
             "errors": errors
         }), 400
 
-    data = serv.tasks_by_user_id(user["id"])
+    data = serv.tasks_by_user_id(user["id"], page, limit)
     
-    total: int = len(data)
+    total: int = serv.count_tasks_by_user_id(user["id"])
     data_in_page = data[0:limit]
     data_in_dict = [item.to_dict() for item in data_in_page]
 

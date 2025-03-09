@@ -84,3 +84,15 @@ def delete_task(user_id: int, task_id: int):
     task = get_task_for_modification(user_id, task_id)
     db.session.delete(task)
     db.session.commit()
+
+
+def count_tasks_by_user_id(user_id: int):
+   return db.session.query(Task).filter(Task.user_id == user_id).count()    
+
+
+def tasks_by_user_id(user_id: int, page: int, limit: int):
+    return db.session.query(Task)\
+        .filter(Task.user_id == user_id)\
+        .limit(limit)\
+        .offset((page - 1) * limit)\
+        .all()
