@@ -112,11 +112,25 @@ GET /todos?page=1&limit=10
 @require_auth
 def get_tasks(user: dict):
     valid_query, errors = validate_query_parameters()
-    
+
+    page = int(request.args["page"])
+    limit = int(request.args["limit"])
+
     if not valid_query:
         return jsonify({
             "message": "Invalid request",
             "errors": errors
         }), 400
 
-    return jsonify(), 0
+    data = serv.tasks_by_user_id(user["id"])
+    
+    total: int = len(data)
+    data_in_page = data[0:limit]
+    data_in_dict = [item.to_dict() for item in data_in_page]
+
+    return jsonify({
+        "data": data_in_dict,
+        "page": page,
+        "limit": limit,
+        "total": total
+    }), 200
