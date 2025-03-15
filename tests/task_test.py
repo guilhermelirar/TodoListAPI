@@ -27,7 +27,7 @@ def test_create_task_with_invalid_fields(client: FlaskClient,
     response: TestResponse = client.post("/todos", json={}, headers=headers)
 
     assert response.status_code == 400
-    assert response.get_json()["message"] == "Missing fields"
+    assert response.get_json()["message"] == "Missing information"
 
 
 def test_create_task_with_success(client: FlaskClient, existing_user_tokens: dict):
