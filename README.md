@@ -18,8 +18,6 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - Refresh token mechanism for authentication
 - Automated tests with pytest
 
-Other features listed on roadmap.sh project idea are still being implemented
-
 --- 
 
 ## Tools used and requirements
@@ -86,5 +84,3 @@ Tests are located in the `/tests` directory.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
-
