@@ -43,36 +43,30 @@ def existing_user(app):
 @pytest.fixture
 def existing_user_tokens(existing_user: User):
     return {
-        "access_token": generate_access_token(existing_user.id, existing_user.email),
-        "refresh_token": generate_refresh_token(existing_user.id, existing_user.email),
+        "access_token": generate_access_token(existing_user.id),
+        "refresh_token": generate_refresh_token(existing_user.id),
     }
 
-def generate_expired_token(key, id, email):
+def generate_expired_token(key, id):
     return jwt.encode({
         "exp": datetime.now(tz=timezone.utc) - timedelta(days=30),
-        "id": id, 
-        "email": email
+        "sub": str(id), 
     }, key, algorithm="HS256")
 
 @pytest.fixture
 def expired_refresh_token(existing_user: User):
     return generate_expired_token(REFRESH_TOKEN_SECRET, 
-                                  existing_user.id, 
-                                  existing_user.email)
+                                  existing_user.id)
 
 @pytest.fixture
 def valid_refresh_token():
-    return jwt.encode({
-        "exp": datetime.now(tz=timezone.utc) + timedelta(days=30),
-        "id": 1, 
-        "email": "auser@email.com"
-    }, REFRESH_TOKEN_SECRET, algorithm="HS256")
+    return generate_refresh_token(1) 
 
 
 @pytest.fixture
 def alt_valid_access_token():
     """ Valid access token, but not related to any user """
-    return generate_access_token(-1, "email@email.com")
+    return generate_access_token(-1)
 
 
 @pytest.fixture
@@ -84,7 +78,7 @@ def access_token_of_user_with_tasks(existing_user_tokens, app):
     access_token: str =  existing_user_tokens["access_token"]
     from app.services.task_service import create_task
     from app.services.auth_service import user_from_access_token
-    user_id = int(user_from_access_token(access_token)["id"])
+    user_id = int(user_from_access_token(access_token)["sub"])
     
     with app.app_context(): 
         create_task(user_id,  {
@@ -93,8 +87,8 @@ def access_token_of_user_with_tasks(existing_user_tokens, app):
         })
     
         create_task(user_id,  {
-        "title": "Pay bills",
-        "description": "Pay electricity and water bills"    
+            "title": "Pay bills",
+            "description": "Pay electricity and water bills"    
         })
 
         return access_token

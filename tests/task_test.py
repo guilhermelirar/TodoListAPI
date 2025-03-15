@@ -1,7 +1,5 @@
-from flask import request
 from flask.testing import FlaskClient
 from werkzeug.test import TestResponse
-from werkzeug.utils import header_property
 
 task = { "title": "Buy groceries", "description": "Buy milk, eggs, and bread" }
 task_2 = { "title": "Buy groceries", "description": "Buy milk, eggs, bread and cheese" }

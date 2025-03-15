@@ -19,7 +19,7 @@ def refresh() -> tuple[Response, int]:
     
     try:
         data = serv.user_from_refresh_token(token)
-        new_access_token = serv.generate_access_token(data["id"], data["email"])
+        new_access_token = serv.generate_access_token(data["sub"])
 
         return jsonify({
             "token": new_access_token
@@ -29,6 +29,11 @@ def refresh() -> tuple[Response, int]:
         return jsonify({
             "message": str(e)
         }), 401
+
+    except RuntimeError:
+        return jsonify({
+            "message": "Internal error"
+        }), 500
 
 
 """ POST /register
@@ -50,11 +55,9 @@ def register() -> tuple[Response, int]:
             "message": str(e)
         }), 400
 
-    access_token: str = serv.generate_access_token(new_user_id, 
-                                                   request.get_json()["email"])
+    access_token: str = serv.generate_access_token(new_user_id)
     print("New access token issued: ", access_token)
-    refresh_token: str = serv.generate_refresh_token(new_user_id,
-                                                     request.get_json()["email"])
+    refresh_token: str = serv.generate_refresh_token(new_user_id)
     print("New refresh token issued: ", refresh_token)
 
     return jsonify({

@@ -21,13 +21,13 @@ def require_auth(f):
         
         # Checks if the token is valid
         try:
-            user = user_from_access_token(token)
+            user_id = int(user_from_access_token(token)["sub"])
         except UnauthorizedTokenError as e:
             return jsonify({
                 "message": str(e)
             }), 401
         
-        return f(user, *args, **kwargs)
+        return f(user_id, *args, **kwargs)
 
     return decorated_function
 
