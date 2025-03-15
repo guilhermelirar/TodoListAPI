@@ -1,6 +1,7 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify
 from app.services import auth_service as serv
+from app.utils import require_json_fields
 
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
@@ -38,35 +39,22 @@ def refresh() -> tuple[Response, int]:
 }
 """
 @auth_bp.route('/register', methods=['POST'])
+@require_json_fields(required={'name', 'email', 'password'})
 def register() -> tuple[Response, int]:
-    # Only accepts application/json
-    if request.mimetype != 'application/json':
-        return jsonify({
-            "message": "Invalid request"
-        }), 400
-   
-    # Required fields
-    name: str = request.get_json().get("name", None)
-    email: str = request.get_json().get("email", None)
-    password: str = request.get_json().get("password", None)
-
-    # Checking if all fields present
-    if not name or not email or not password:
-        return jsonify({
-            "message" : "Missing information"
-        }), 400
-
+    """ Registers a new user and returns with access and refresh token """
     new_user_id: int
     try:
-        new_user_id = serv.create_user(name, email, password)
+        new_user_id = serv.create_user(request.get_json())
     except serv.UserAlreadyExistsError as e:
         return jsonify({
             "message": str(e)
         }), 400
 
-    access_token: str = serv.generate_access_token(new_user_id, email)
+    access_token: str = serv.generate_access_token(new_user_id, 
+                                                   request.get_json()["email"])
     print("New access token issued: ", access_token)
-    refresh_token: str = serv.generate_refresh_token(new_user_id, email)
+    refresh_token: str = serv.generate_refresh_token(new_user_id,
+                                                     request.get_json()["email"])
     print("New refresh token issued: ", refresh_token)
 
     return jsonify({
@@ -83,24 +71,11 @@ POST /login
 }
 """
 @auth_bp.route('/login', methods=['POST'])
+@require_json_fields(required={"email", "password"})
 def login() -> tuple[Response, int]:
-    # Posssible invalid request
-    if request.mimetype != 'application/json':
-        return jsonify({
-            "message": "Invalid request"
-        }), 400
-
-    # Required fields
-    email: str = request.get_json().get("email", None)
-    password: str = request.get_json().get("password", None)
+    tokens = serv.login(request.get_json()["email"], 
+                        request.get_json()["password"])
     
-    # Checking if all fields present
-    if not email or not password:
-        return jsonify({
-            "message" : "Missing information"
-        }), 400
-
-    tokens = serv.login(email, password)
     if not tokens:
         return jsonify({
             "message": "Invalid credentials"
