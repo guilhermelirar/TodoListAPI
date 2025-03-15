@@ -54,3 +54,27 @@ def validate_query_parameters():
         return True, None
     
     return False, errors
+
+
+def require_json_fields(required: set):
+    """Ensures the request has a JSON with the required fields"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not request.is_json:
+                return jsonify({"message": "Invalid request"}), 400
+
+            request_fields_set = set(request.get_json().keys())
+            missing_fields = required - request_fields_set
+
+            if missing_fields:
+                return jsonify({
+                    "message": "Missing information", 
+                    "details": list(missing_fields)
+                }), 400
+
+            return f(*args, **kwargs)
+
+        return decorated_function
+    return decorator
+ 
