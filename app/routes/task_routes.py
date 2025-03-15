@@ -1,6 +1,6 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify
-from app.utils import require_auth, validate_query_parameters
+from app.utils import require_auth, require_json_fields, validate_query_parameters
 import app.services.task_service as serv
 
 todo_bp = Blueprint('todos', __name__)
@@ -14,20 +14,10 @@ POST /todos
 """
 @todo_bp.route('/todos', methods=['POST'])
 @require_auth
+@require_json_fields(required={"title", "description"})
 def todos(user: dict) -> tuple[Response, int]:
-    if not request.is_json:
-        return jsonify({
-            "message": "Invalid request"
-        }), 400
-
-    data = request.get_json()
-    if not data or not all(k in data for k in ("title", "description")):
-        return jsonify({
-            "message": "Missing fields"
-        }), 400
-    
     try:
-        created_item_details = serv.create_task(user["id"], data)
+        created_item_details = serv.create_task(user["id"], request.get_json())
         return jsonify(created_item_details), 201
     
     except ValueError as e:
@@ -50,15 +40,10 @@ PUT /todos/1
 """
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
 @require_auth
+@require_json_fields(required={"title", "description"})
 def update_task(user: dict, id: int):
-    data = request.get_json()
-    if not data or not all(k in data for k in ("title", "description")):
-        return jsonify({
-            "message": "Missing fields"
-        }), 400
-       
     try:
-        new_data = serv.update_task(user["id"], id, data)
+        new_data = serv.update_task(user["id"], id, request.get_json())
     
     except serv.TaskPermissionError:
         return jsonify({
