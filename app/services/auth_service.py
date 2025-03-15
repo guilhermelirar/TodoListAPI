@@ -16,18 +16,17 @@ class UnauthorizedTokenError(Exception):
     pass
 
 
-def generate_access_token(id: int, email: str) -> str:
+def generate_access_token(user_id: int) -> str:
     return jwt.encode({
-        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=30),
-        "id": id, 
-        "email": email}, ACCESS_TOKEN_SECRET, algorithm="HS256")
+            "sub": str(user_id), 
+            "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=30),
+        }, ACCESS_TOKEN_SECRET, algorithm="HS256")
 
 
-def generate_refresh_token(id: int, email: str) -> str:
+def generate_refresh_token(user_id: int) -> str:
     return jwt.encode({
+        "sub": str(user_id), 
         "exp": datetime.now(tz=timezone.utc) + timedelta(days=30),
-        "id": id, 
-        "email": email
     }, REFRESH_TOKEN_SECRET, algorithm="HS256")
 
 
@@ -48,6 +47,9 @@ def user_from_token(token: str, secret: str) -> dict:
 
     except jwt.InvalidTokenError:
         raise UnauthorizedTokenError("Unauthorized")
+
+    except Exception:
+        raise RuntimeError()
     
 
 def create_user(user_data: dict) -> int:
@@ -84,6 +86,6 @@ def login(email, password) -> Union[dict, None]:
         return None
     
     return {
-        "access_token": generate_access_token(user.id, user.email),
-        "refresh_token": generate_refresh_token(user.id, user.email)
+        "access_token": generate_access_token(user.id),
+        "refresh_token": generate_refresh_token(user.id)
     }
