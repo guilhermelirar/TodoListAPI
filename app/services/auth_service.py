@@ -50,11 +50,16 @@ def user_from_token(token: str, secret: str) -> dict:
         raise UnauthorizedTokenError("Unauthorized")
     
 
-def create_user(name: str, email: str, password: str) -> int:
-    new_user: User
+def create_user(user_data: dict) -> int:
+    """
+    Returns the id of a new User created with user_data
+    Assumes user_data contains the required fields
+    """
     
     try:
-        new_user = User(name, email, password)
+        new_user = User(user_data["name"], 
+                        user_data["email"], 
+                        user_data["password"])
     except ValueError as ve:
         print("Value error:", ve.args)
         raise
@@ -71,6 +76,7 @@ def create_user(name: str, email: str, password: str) -> int:
     except Exception as e:
         print("Generic error:", e.args)
         raise RuntimeError("Unknown error ocurred while creating the user")
+
 
 def login(email, password) -> Union[dict, None]:
     user = db.session.query(User).filter(User.email == email).first()
