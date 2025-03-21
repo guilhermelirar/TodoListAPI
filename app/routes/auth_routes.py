@@ -2,6 +2,7 @@
 from flask import Blueprint, request, Response, jsonify
 from app.services import auth_service as serv
 from app.utils import require_json_fields
+from app.extensions import limiter
 
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
@@ -44,6 +45,7 @@ def refresh() -> tuple[Response, int]:
 }
 """
 @auth_bp.route('/register', methods=['POST'])
+@limiter.limit("5 per minute")
 @require_json_fields(required={'name', 'email', 'password'})
 def register() -> tuple[Response, int]:
     """ Registers a new user and returns with access and refresh token """
@@ -74,6 +76,7 @@ POST /login
 }
 """
 @auth_bp.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 @require_json_fields(required={"email", "password"})
 def login() -> tuple[Response, int]:
     tokens = serv.login(request.get_json()["email"], 
