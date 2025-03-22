@@ -2,6 +2,7 @@
 from flask import Blueprint, request, Response, jsonify
 from app.utils import require_auth, require_json_fields, validate_query_parameters
 import app.services.task_service as serv
+from app.utils import limit_requests
 
 todo_bp = Blueprint('todos', __name__)
 
@@ -14,6 +15,7 @@ POST /todos
 """
 @todo_bp.route('/todos', methods=['POST'])
 @require_auth
+@limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
 def todos(user_id: int) -> tuple[Response, int]:
     try:
@@ -40,6 +42,7 @@ PUT /todos/1
 """
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
 @require_auth
+@limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
 def update_task(user_id: int, id: int):
     try:
@@ -68,6 +71,7 @@ DELETE /todos/1
 """
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])
 @require_auth
+@limit_requests("50 per hour")
 def delete_task(user_id: int, id: int) -> tuple[Response, int]:
     try:
         serv.delete_task(user_id, id)
@@ -94,6 +98,7 @@ def delete_task(user_id: int, id: int) -> tuple[Response, int]:
 GET /todos?page=1&limit=10
 """
 @todo_bp.route('/todos', methods=['GET'])
+@limit_requests("500 per hour")
 @require_auth
 def get_tasks(user_id: int):
     valid_query, errors = validate_query_parameters()
