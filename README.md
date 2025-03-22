@@ -16,6 +16,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - Delete to-do item with `DELETE /todos/<int:id>` endpoint
 - Get to-do items in paginated response with `GET /todos/?page=1&limit=10`
 - Refresh token mechanism for authentication
+- Rate limiting
 - Automated tests with pytest
 
 --- 
@@ -26,6 +27,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - SQLAlchemy as Object Relational Mapper
 - PyJWT for encoding and decoding JSON Web Tokens
 - pytest as test framework
+- Flask-Limiter for rate limiting
 
 ---
 
