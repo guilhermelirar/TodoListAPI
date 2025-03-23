@@ -1,6 +1,6 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify, g
-from app.utils import require_auth, require_json_fields, validate_query_parameters
+from app.utils import require_json_fields, validate_query_parameters
 import app.services.task_service as serv
 from app.services.auth_service import user_from_access_token, UnauthorizedTokenError
 from app.utils import limit_requests
