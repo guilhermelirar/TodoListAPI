@@ -3,8 +3,7 @@
 Utility decorator functions
 """
 from functools import wraps
-from flask import request, jsonify, g
-from app.services.auth_service import user_from_access_token, UnauthorizedTokenError
+from flask import request, jsonify
 from app.extensions import limiter
 
 def limit_requests(limit: str):
@@ -15,33 +14,6 @@ def limit_requests(limit: str):
             return f(*args, **kwargs)
         return wrapped
     return decorator
-
-def require_auth(f):
-    """ Ensures that the request header contains a valid jwt before proceeding with the operation """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # Checks if request has authorization header
-        auth_header = request.headers.get('authorization')
-        if not auth_header or len(auth_header.split()) != 2:
-            return jsonify({
-                "message": "Unauthorized"
-            }), 401
-         
-        token = auth_header.split()[1]
-        
-        # Checks if the token is valid
-        try:
-            user_id = int(user_from_access_token(token)["sub"])
-            g.user_id = user_id
-        except UnauthorizedTokenError as e:
-            return jsonify({
-                "message": str(e)
-            }), 401
-        
-        return f(user_id, *args, **kwargs)
-
-    return decorated_function
-
 
 def validate_query_parameters():
     errors = []
