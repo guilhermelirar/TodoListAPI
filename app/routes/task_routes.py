@@ -1,10 +1,30 @@
 #app/routes/auth_routes.py
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, Response, jsonify, g
 from app.utils import require_auth, require_json_fields, validate_query_parameters
 import app.services.task_service as serv
+from app.services.auth_service import user_from_access_token, UnauthorizedTokenError
 from app.utils import limit_requests
 
 todo_bp = Blueprint('todos', __name__)
+
+@todo_bp.before_request
+def require_authenticated(): 
+    auth_header = request.headers.get('authorization')
+    if not auth_header or len(auth_header.split()) != 2:
+        return jsonify({
+            "message": "Unauthorized"
+        }), 401
+         
+    token = auth_header.split()[1]
+        
+    # Checks if the token is valid
+    try:
+        user_id = user_from_access_token(token)["sub"]
+        g.user_id = user_id
+    except UnauthorizedTokenError as e:
+        return jsonify({
+            "message": str(e)
+        }), 401
 
 """
 POST /todos
@@ -14,10 +34,11 @@ POST /todos
 }
 """
 @todo_bp.route('/todos', methods=['POST'])
-@require_auth
+#@require_auth
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
-def todos(user_id: int) -> tuple[Response, int]:
+def todos() -> tuple[Response, int]:
+    user_id: int = int(g.get("user_id"))
     try:
         created_item_details = serv.create_task(user_id, request.get_json())
         return jsonify(created_item_details), 201
