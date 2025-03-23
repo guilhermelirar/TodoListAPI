@@ -20,7 +20,7 @@ def require_authenticated():
     # Checks if the token is valid
     try:
         user_id = user_from_access_token(token)["sub"]
-        g.user_id = user_id
+        g.user_id = int(user_id)
     except UnauthorizedTokenError as e:
         return jsonify({
             "message": str(e)
@@ -34,13 +34,11 @@ POST /todos
 }
 """
 @todo_bp.route('/todos', methods=['POST'])
-#@require_auth
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
 def todos() -> tuple[Response, int]:
-    user_id: int = int(g.get("user_id"))
     try:
-        created_item_details = serv.create_task(user_id, request.get_json())
+        created_item_details = serv.create_task(g.get("user_id"), request.get_json())
         return jsonify(created_item_details), 201
     
     except ValueError as e:
@@ -62,12 +60,11 @@ PUT /todos/1
 }
 """
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
-@require_auth
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
-def update_task(user_id: int, id: int):
+def update_task(id: int):
     try:
-        new_data = serv.update_task(user_id, id, request.get_json())
+        new_data = serv.update_task(g.get("user_id"), id, request.get_json())
     
     except serv.TaskPermissionError:
         return jsonify({
@@ -91,11 +88,10 @@ def update_task(user_id: int, id: int):
 DELETE /todos/1
 """
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])
-@require_auth
 @limit_requests("50 per hour")
-def delete_task(user_id: int, id: int) -> tuple[Response, int]:
+def delete_task(id: int) -> tuple[Response, int]:
     try:
-        serv.delete_task(user_id, id)
+        serv.delete_task(g.get("user_id"), id)
     
     except serv.TaskNotFoundError as e:
         return jsonify({
