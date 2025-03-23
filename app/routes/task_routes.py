@@ -116,8 +116,7 @@ GET /todos?page=1&limit=10
 """
 @todo_bp.route('/todos', methods=['GET'])
 @limit_requests("500 per hour")
-@require_auth
-def get_tasks(user_id: int):
+def get_tasks():
     valid_query, errors = validate_query_parameters()
 
     page = int(request.args["page"])
@@ -129,9 +128,9 @@ def get_tasks(user_id: int):
             "errors": errors
         }), 400
 
-    data = serv.tasks_by_user_id(user_id, page, limit)
+    data = serv.tasks_by_user_id(g.get("user_id"), page, limit)
     
-    total: int = serv.count_tasks_by_user_id(user_id)
+    total: int = serv.count_tasks_by_user_id(g.get("user_id"))
     data_in_page = data[0:limit]
     data_in_dict = [item.to_dict() for item in data_in_page]
 
