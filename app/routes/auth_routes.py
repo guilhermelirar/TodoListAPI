@@ -54,6 +54,24 @@ def register() -> tuple[Response, int]:
     tags:
       - Auth
       - User
+    parameters:
+      - name: user_data
+        in: body
+        description: Required information to create a new user
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "New User"
+            email:
+              type: string
+              example: "validemail@email.com"
+            password:
+              type: string
+              example: "verysafepassword123"
+
     responses:
       201:
         description: Account created successfully
@@ -66,6 +84,30 @@ def register() -> tuple[Response, int]:
             refresh_token:
               type: string
               example: "abcdefghlmnop1"
+
+      400:
+        description: Bad request due to missing or invalid data
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid data"
+            details:
+              type: array
+              items:
+                type: string
+        examples:
+          invalid_data:
+            value:
+              message: "Invalid request"
+          missing_information:
+            value:
+              message: "Missing information"
+              details: ["email", "password"]
+          email_in_use:
+            value:
+              message: "Email already in use"
     """
     new_user_id: int
     try:
