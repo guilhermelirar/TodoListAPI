@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from .extensions import limiter
+from flasgger import Swagger
 
 db = SQLAlchemy()
 
@@ -33,4 +34,13 @@ def create_app(config_class = 'app.config.Config') -> Flask:
     app.register_blueprint(auth_bp)
     app.register_blueprint(todo_bp)
 
+    # API documentation with Swagger
+
+    Swagger(app, template={
+        "info": {
+            "title": "Todo List API",
+            "version": "1.0.0"
+        }
+    })
+        
     return app
