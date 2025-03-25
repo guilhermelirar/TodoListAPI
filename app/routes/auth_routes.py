@@ -56,16 +56,16 @@ def register() -> tuple[Response, int]:
       - User
     responses:
       201:
-        description: Account created with success
+        description: Account created successfully
         schema:
-          type: jsson
+          type: object
           properties:
             access_token:
-            type: string
-            example: "abcdefghlmnop1"
-          refresh_token:
-            type: string
-            example: "abcdefghlmnop1"
+              type: string
+              example: "abcdefghlmnop1"
+            refresh_token:
+              type: string
+              example: "abcdefghlmnop1"
     """
     new_user_id: int
     try:
