@@ -48,7 +48,25 @@ def refresh() -> tuple[Response, int]:
 @limiter.limit("5 per minute")
 @require_json_fields(required={'name', 'email', 'password'})
 def register() -> tuple[Response, int]:
-    """ Registers a new user and returns with access and refresh token """
+    """
+    Register a new user
+    ---
+    tags:
+      - Auth
+      - User
+    responses:
+      201:
+        description: Account created with success
+        schema:
+          type: jsson
+          properties:
+            access_token:
+            type: string
+            example: "abcdefghlmnop1"
+          refresh_token:
+            type: string
+            example: "abcdefghlmnop1"
+    """
     new_user_id: int
     try:
         new_user_id = serv.create_user(request.get_json())
