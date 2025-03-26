@@ -28,6 +28,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - PyJWT for encoding and decoding JSON Web Tokens
 - pytest as test framework
 - Flask-Limiter for rate limiting
+- Flasgger for API documentation with Swagger
 
 ---
 
