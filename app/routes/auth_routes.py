@@ -86,7 +86,6 @@ def register() -> tuple[Response, int]:
     ---
     tags:
       - Auth
-      - User
     parameters:
       - name: user_data
         in: body
@@ -170,7 +169,6 @@ def login() -> tuple[Response, int]:
     ---
     tags:
       - Auth
-      - User
     parameters:
       - name: login_data
         in: body
