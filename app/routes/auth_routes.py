@@ -139,6 +139,58 @@ POST /login
 @limiter.limit("5 per minute")
 @require_json_fields(required={"email", "password"})
 def login() -> tuple[Response, int]:
+    """
+    Login with user
+    ---
+    tags:
+      - Auth
+      - User
+    parameters:
+      - name: login_data
+        in: body
+        description: Required information to login
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              example: "registered@email.com"
+            password:
+              type: string
+              example: "validpassword123"
+
+    responses:
+      201:
+        description: Successfull login
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+              example: "abcdefghlmnop1"
+            refresh_token:
+              type: string
+              example: "abcdefghlmnop1"
+
+      400:
+        description: Bad request due to missing or invalid data
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid request"
+      404:
+        description: User with provided credentials does not exist 
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid credentials"
+    """
+
     tokens = serv.login(request.get_json()["email"], 
                         request.get_json()["password"])
     
