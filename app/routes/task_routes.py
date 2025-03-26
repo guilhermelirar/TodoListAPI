@@ -37,6 +37,58 @@ POST /todos
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
 def todos() -> tuple[Response, int]:
+    """
+    Login with user
+    ---
+    tags:
+      - Tasks
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer access token
+        required: true
+        type: string
+        example: Bearer valid_access_token
+
+      - name: new_task
+        in: body
+        description: Required information to create a new to do item 
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              example: "Buy groceries"
+            description:
+              type: string
+              example: "Buy milk, eggs, and bread"
+
+    responses:
+      201:
+        description: To do item created successfully
+        schema:
+          type: object
+          properties:
+            id:
+              type: int
+              example: 1
+            title:
+              type: string
+              example: "Buy groceries"
+            description:
+              type: string
+              example: "Buy milk, eggs, and bread"
+
+      400:
+        description: Bad request due to missing or invalid data
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid request"
+    """
     try:
         created_item_details = serv.create_task(g.get("user_id"), request.get_json())
         return jsonify(created_item_details), 201
