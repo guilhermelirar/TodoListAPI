@@ -9,6 +9,46 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
+    """
+    Receive access token
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer refresh token
+        required: true
+        type: string
+        example: Bearer valid_refresh_token
+
+    responses:
+      200:
+        description: Successfull access token generation
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+              example: "abcdefghlmnop1"
+
+      401:
+        description: Unauthorized due to invalid, missing or expired token
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Unauthorized"
+        examples:
+          invalid_token:
+            value:
+                message: "Unauthorized"
+          expired_token:
+            value:
+                message: "Token expired, please login again"
+    """
+
     headers = request.headers
     auth_header = headers.get("authorization")
     if not auth_header:
@@ -37,13 +77,6 @@ def refresh() -> tuple[Response, int]:
         }), 500
 
 
-""" POST /register
-{
-  "name": "John Doe",
-  "email": "john@doe.com",
-  "password": "password"
-}
-"""
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
 @require_json_fields(required={'name', 'email', 'password'})
@@ -128,13 +161,6 @@ def register() -> tuple[Response, int]:
     }), 201
 
 
-"""
-POST /login
-{
-  "email": "john@doe.com",
-  "password": "password"
-}
-"""
 @auth_bp.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
 @require_json_fields(required={"email", "password"})
