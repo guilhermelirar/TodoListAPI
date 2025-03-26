@@ -25,7 +25,11 @@ def create_app(config_class = 'app.config.Config') -> Flask:
         return jsonify({
             "message": "Too many requests"
         }), 429
-
+    
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return jsonify({"message": "Internal Server Error"}), 500
+    
     with app.app_context():
         db.create_all()
 
