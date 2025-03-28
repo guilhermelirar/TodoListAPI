@@ -204,6 +204,49 @@ def update_task(id: int):
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])
 @limit_requests("50 per hour")
 def delete_task(id: int) -> tuple[Response, int]:
+    """
+    Delete an existing taks
+    ---
+    tags:
+      - Tasks
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer access token
+        required: true
+        type: string
+        example: Bearer valid_access_token
+
+      - name: task_id
+        in: path
+        description: ID of the to do item
+        required: true
+        schema:
+          type: integer
+          example: 1
+
+    responses:
+      204:
+        description: To do item deleted successfully.
+
+      403:
+        description: User has no permisson toa access the resource
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Forbidden"
+
+      404:
+        description: Resource was not found
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Task not found"
+    """
     try:
         serv.delete_task(g.get("user_id"), id)
     
