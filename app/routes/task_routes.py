@@ -26,13 +26,6 @@ def require_authenticated():
             "message": str(e)
         }), 401
 
-"""
-POST /todos
-{
-  "title": "Buy groceries",
-  "description": "Buy milk, eggs, and bread"
-}
-"""
 @todo_bp.route('/todos', methods=['POST'])
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
@@ -104,13 +97,6 @@ def todos() -> tuple[Response, int]:
         }), 500
 
 
-"""
-PUT /todos/1
-{
-  "title": "Buy groceries",
-  "description": "Buy milk, eggs, bread, and cheese"
-}
-"""
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
@@ -136,9 +122,6 @@ def update_task(id: int):
     return jsonify(new_data), 200
 
 
-"""
-DELETE /todos/1
-"""
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])
 @limit_requests("50 per hour")
 def delete_task(id: int) -> tuple[Response, int]:
@@ -163,9 +146,6 @@ def delete_task(id: int) -> tuple[Response, int]:
     return jsonify(), 204
 
 
-"""
-GET /todos?page=1&limit=10
-"""
 @todo_bp.route('/todos', methods=['GET'])
 @limit_requests("500 per hour")
 def get_tasks():
