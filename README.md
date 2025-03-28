@@ -74,6 +74,13 @@ The `/hello` route will only work if `run.py` is used.
 
 ---
 
+## Documentation
+This project is documented with Swagger through Flasgger, as listed in the
+requirements. The generated documentation can be accessed via browser through
+`/api docs`.
+
+---
+
 ## Tests
 This project uses `pytest` as test framework. 
 
