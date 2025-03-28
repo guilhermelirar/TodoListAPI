@@ -102,7 +102,7 @@ def todos() -> tuple[Response, int]:
 @require_json_fields(required={"title", "description"})
 def update_task(id: int):
     """
-    Update an existing taks
+    Update an existing task
     ---
     tags:
       - Tasks
@@ -205,7 +205,7 @@ def update_task(id: int):
 @limit_requests("50 per hour")
 def delete_task(id: int) -> tuple[Response, int]:
     """
-    Delete an existing taks
+    Delete an existing task
     ---
     tags:
       - Tasks
