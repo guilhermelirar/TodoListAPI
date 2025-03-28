@@ -101,6 +101,85 @@ def todos() -> tuple[Response, int]:
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
 def update_task(id: int):
+    """
+    Update an existing taks
+    ---
+    tags:
+      - Tasks
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer access token
+        required: true
+        type: string
+        example: Bearer valid_access_token
+
+      - name: task_id
+        in: path
+        description: ID of the to do item
+        required: true
+        schema:
+          type: integer
+          example: 1
+
+      - name: new_information
+        in: body
+        description: Required information to update a to-do item 
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              example: "Buy groceries"
+            description:
+              type: string
+              example: "Buy milk, eggs, bread and cheese"
+
+    responses:
+      200:
+        description: To do item updated successfully. New information is returned
+        schema:
+          type: object
+          properties:
+            id:
+              type: int
+              example: 1
+            title:
+              type: string
+              example: "Buy groceries"
+            description:
+              type: string
+              example: "Buy milk, eggs, bread and cheese"
+
+      400:
+        description: Bad request due to missing or invalid data
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid request"
+      
+      403:
+        description: User has no permisson toa access the resource
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Forbidden"
+
+      404:
+        description: Resource was not found
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Task not found"
+    """
+
     try:
         new_data = serv.update_task(g.get("user_id"), id, request.get_json())
     
