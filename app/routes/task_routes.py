@@ -31,7 +31,7 @@ def require_authenticated():
 @require_json_fields(required={"title", "description"})
 def todos() -> tuple[Response, int]:
     """
-    Login with user
+    Create a new task
     ---
     tags:
       - Tasks
