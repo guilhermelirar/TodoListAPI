@@ -271,6 +271,82 @@ def delete_task(id: int) -> tuple[Response, int]:
 @todo_bp.route('/todos', methods=['GET'])
 @limit_requests("500 per hour")
 def get_tasks():
+    """
+    Get list of todos with pagination
+    ---
+    tags:
+      - Tasks
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer access token
+        required: true
+        type: string
+        example: Bearer valid_access_token
+
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        schema:
+          type: integer
+          example: 1
+
+      - name: limit
+        in: query
+        description: Number of items per page
+        required: false
+        schema:
+          type: integer
+          example: 10
+
+    responses:
+      200:
+        description: A paginated list of todos
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      title:
+                        type: string
+                        example: "Buy groceries"
+                      description:
+                        type: string
+                        example: "Buy milk, eggs, bread"
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                total:
+                  type: integer
+                  example: 2
+
+      400:
+        description: Bad request due to invalid query parameters
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Invalid request"
+            errors:
+              type: array
+              items: 
+                type: string
+                example: "Invalid value for limit '-1' (should be higher than 0)" 
+    """
+
     valid_query, errors = validate_query_parameters()
 
     page = int(request.args["page"])
