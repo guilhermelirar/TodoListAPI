@@ -162,7 +162,7 @@ def update_task(id: int):
               example: "Invalid request"
       
       403:
-        description: User has no permisson toa access the resource
+        description: User has no permission toa access the resource
         schema:
           type: object
           properties:
