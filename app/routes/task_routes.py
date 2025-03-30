@@ -114,7 +114,7 @@ def update_task(id: int):
         type: string
         example: Bearer valid_access_token
 
-      - name: task_id
+      - name: id
         in: path
         description: ID of the to do item
         required: true
@@ -217,7 +217,7 @@ def delete_task(id: int) -> tuple[Response, int]:
         type: string
         example: Bearer valid_access_token
 
-      - name: task_id
+      - name: id
         in: path
         description: ID of the to do item
         required: true
