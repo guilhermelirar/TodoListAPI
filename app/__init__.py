@@ -2,8 +2,10 @@ from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from .extensions import limiter
 from flasgger import Swagger
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app(config_class = 'app.config.Config') -> Flask:
     app = Flask(__name__)
@@ -30,8 +32,7 @@ def create_app(config_class = 'app.config.Config') -> Flask:
     def internal_server_error(e):
         return jsonify({"message": "Internal Server Error"}), 500
     
-    with app.app_context():
-        db.create_all()
+    migrate.init_app(app, db)
 
     # Blueprints registration
     from app.routes import auth_bp, todo_bp
@@ -39,7 +40,6 @@ def create_app(config_class = 'app.config.Config') -> Flask:
     app.register_blueprint(todo_bp)
 
     # API documentation with Swagger
-
     Swagger(app, template={
         "info": {
             "title": "Todo List API",

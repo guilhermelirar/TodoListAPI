@@ -15,6 +15,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - Update to-do item with `PUT /todos/<int:id>` endpoint
 - Delete to-do item with `DELETE /todos/<int:id>` endpoint
 - Get to-do items in paginated response with `GET /todos/?page=1&limit=10`
+- Interactive documentation with Swagger with `GET /apidocs` endpoint
 - Refresh token mechanism for authentication
 - Rate limiting
 - Automated tests with pytest
@@ -29,6 +30,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 - pytest as test framework
 - Flask-Limiter for rate limiting
 - Flasgger for API documentation with Swagger
+- Flask-Migrate for database migrations
 
 ---
 
@@ -65,6 +67,13 @@ pip install -r requirements.txt
 ```
 
 ### 4. Run application
+
+Before running the application, create the data base tables with an initial migration, as follows:
+```shell
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+```
 
 The application can be run using the `flask run` command or through the `run.py` file as follows:
 ```shell
