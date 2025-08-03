@@ -83,10 +83,15 @@ The `/hello` route will only work if `run.py` is used.
 
 ---
 
-## Documentation
-This project is documented with Swagger through Flasgger, as listed in the
-requirements. The generated documentation can be accessed via browser through
-`/api docs`.
+## API Documentation
+
+This project includes interactive API documentation powered by **Swagger**, integrated through **Flasgger** (see `requirements.txt`).  
+
+Once the application is running, the documentation will be available at:
+
+```/apidocs```
+
+From this interface, you can explore all available endpoints, check request/response schemas, and even test the API directly from your browser.
 
 ---
 
