@@ -68,7 +68,7 @@ pip install -r requirements.txt
 
 ### 4. Run application
 
-Before running the application, create the data base tables with an initial migration, as follows:
+Before running the application, create the database tables with an initial migration, as follows:
 ```shell
 flask db init
 flask db migrate -m "Initial migration"
