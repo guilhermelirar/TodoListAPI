@@ -7,15 +7,16 @@ from app.extensions import limiter
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
 
+
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
     """
-    Receive access token
+    Receive acce ess token
     ---
     tags:
       - Auth
     parameters:
-      - name: Authorization
+      - name: Authorization e
         in: header
         description: Bearer refresh token
         required: true
@@ -142,12 +143,7 @@ def register() -> tuple[Response, int]:
               message: "Email already in use"
     """
     new_user_id: int
-    try:
-        new_user_id = serv.create_user(request.get_json())
-    except serv.UserAlreadyExistsError as e:
-        return jsonify({
-            "message": str(e)
-        }), 400
+    new_user_id = serv.create_user(request.get_json())
 
     access_token: str = serv.generate_access_token(new_user_id)
     print("New access token issued: ", access_token)

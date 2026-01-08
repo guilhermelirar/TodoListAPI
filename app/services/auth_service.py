@@ -1,5 +1,6 @@
 #app/services/auth_service.py
 from typing import Union
+from app.errors import *
 from app.models import User
 from app import db
 from sqlalchemy.exc import IntegrityError
@@ -73,12 +74,7 @@ def create_user(user_data: dict) -> int:
 
     except IntegrityError as ie:
         print("Integrity error:", ie.args)
-        raise UserAlreadyExistsError("Email already in use")
-    
-    except Exception as e:
-        print("Generic error:", e.args)
-        raise RuntimeError("Unknown error ocurred while creating the user")
-
+        raise EmailAlreadyInUse()
 
 def login(email, password) -> Union[dict, None]:
     user = db.session.query(User).filter(User.email == email).first()

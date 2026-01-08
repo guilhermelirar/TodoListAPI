@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from .extensions import limiter
 from flasgger import Swagger
 from flask_migrate import Migrate
+from .errors import ServiceError
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -21,6 +22,13 @@ def create_app(config_class = 'app.config.Config') -> Flask:
         return jsonify({
             "message": "Hello World!"
         }), 200
+
+    @app.errorhandler(ServiceError)
+    def service_error(e):
+        return jsonify({
+            "message": e.message
+        }), e.status_code
+
 
     @app.errorhandler(429)
     def too_many(e):
