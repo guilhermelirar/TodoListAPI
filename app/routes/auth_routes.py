@@ -59,24 +59,12 @@ def refresh() -> tuple[Response, int]:
 
     token = auth_header.split(' ')[1]
     
-    try:
-        data = serv.user_from_refresh_token(token)
-        new_access_token = serv.generate_access_token(data["sub"])
+    data = serv.user_from_refresh_token(token)
+    new_access_token = serv.generate_access_token(data["sub"])
 
-        return jsonify({
-            "token": new_access_token
-        }), 200
-    
-    except serv.UnauthorizedTokenError as e:
-        return jsonify({
-            "message": str(e)
-        }), 401
-
-    except RuntimeError:
-        return jsonify({
-            "message": "Internal error"
-        }), 500
-
+    return jsonify({
+        "token": new_access_token
+    }), 200
 
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")

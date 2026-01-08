@@ -2,13 +2,7 @@
 from sqlalchemy.exc import IntegrityError
 from app.models import Task
 from app import db
-
-class TaskPermissionError(Exception):
-    pass
-
-class TaskNotFoundError(Exception):
-    pass
-
+from app.errors import *
 
 def get_task_for_modification(user_id: int, task_id: int) -> Task:
     """
@@ -23,10 +17,10 @@ def get_task_for_modification(user_id: int, task_id: int) -> Task:
     .first()
 
     if not task:
-        raise TaskNotFoundError("Task not found")
+        raise TaskNotFound()
 
     if task.user_id != user_id:
-        raise TaskPermissionError
+        raise Forbidden()
 
     return task
 
@@ -36,7 +30,7 @@ def create_task(user_id: int, data):
    
     title = data.get("title")
     if not title:
-        raise ValueError("Title cannot be empty")
+        raise TitleEmpty()
 
     try:
         new_task = Task(
@@ -49,12 +43,11 @@ def create_task(user_id: int, data):
 
     except IntegrityError:
         db.session.rollback()
-        raise ValueError("User does not exist")
+        raise UserNotFound()
 
     except:
         db.session.rollback()
-        raise RuntimeError("An unexpected error has ocurred")
-   
+  
     return new_task.to_dict()
 
 

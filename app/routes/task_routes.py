@@ -2,7 +2,7 @@
 from flask import Blueprint, request, Response, jsonify, g
 from app.utils import require_json_fields, validate_query_parameters
 import app.services.task_service as serv
-from app.services.auth_service import user_from_access_token, UnauthorizedTokenError
+from app.services.auth_service import user_from_access_token 
 from app.utils import limit_requests
 
 todo_bp = Blueprint('todos', __name__)
@@ -18,13 +18,8 @@ def require_authenticated():
     token = auth_header.split()[1]
         
     # Checks if the token is valid
-    try:
-        user_id = user_from_access_token(token)["sub"]
-        g.user_id = int(user_id)
-    except UnauthorizedTokenError as e:
-        return jsonify({
-            "message": str(e)
-        }), 401
+    user_id = user_from_access_token(token)["sub"]
+    g.user_id = int(user_id)
 
 @todo_bp.route('/todos', methods=['POST'])
 @limit_requests("50 per hour")
@@ -82,20 +77,8 @@ def todos() -> tuple[Response, int]:
               type: string
               example: "Invalid request"
     """
-    try:
-        created_item_details = serv.create_task(g.get("user_id"), request.get_json())
-        return jsonify(created_item_details), 201
-    
-    except ValueError as e:
-        return jsonify({
-            "message": str(e)
-        }), 400
-
-    except RuntimeError as re:
-        return jsonify({
-            "message": str(re)
-        }), 500
-
+    created_item_details = serv.create_task(g.get("user_id"), request.get_json())
+    return jsonify(created_item_details), 201
 
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
 @limit_requests("50 per hour")
@@ -180,26 +163,9 @@ def update_task(id: int):
               example: "Task not found"
     """
 
-    try:
-        new_data = serv.update_task(g.get("user_id"), id, request.get_json())
+    new_data = serv.update_task(g.get("user_id"), id, request.get_json())
     
-    except serv.TaskPermissionError:
-        return jsonify({
-            "message": "Forbidden"
-        }), 403
-    
-    except serv.TaskNotFoundError as e:
-        return jsonify({
-            "message": str(e)
-        }), 404
-
-    except Exception as e:
-        return jsonify({
-            "message": "An unexpected error has ocurred"
-        }), 500
-
     return jsonify(new_data), 200
-
 
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])
 @limit_requests("50 per hour")
@@ -247,24 +213,8 @@ def delete_task(id: int) -> tuple[Response, int]:
               type: string
               example: "Task not found"
     """
-    try:
-        serv.delete_task(g.get("user_id"), id)
+    serv.delete_task(g.get("user_id"), id)
     
-    except serv.TaskNotFoundError as e:
-        return jsonify({
-            "message": str(e)
-        }), 404
-    
-    except serv.TaskPermissionError as e:
-        return jsonify({
-            "message": "Forbidden"
-        }), 403
-
-    except Exception:
-        return jsonify({
-            "message": "An unexpected error has ocurred"
-        }), 500
-
     return jsonify(), 204
 
 

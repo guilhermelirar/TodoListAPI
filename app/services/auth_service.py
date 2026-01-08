@@ -10,13 +10,6 @@ import jwt, os
 ACCESS_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET') or 'acc_token_secret'
 REFRESH_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET') or 'acc_token_secret'
 
-class UserAlreadyExistsError(Exception):
-    pass
-
-class UnauthorizedTokenError(Exception):
-    pass
-
-
 def generate_access_token(user_id: int) -> str:
     return jwt.encode({
             "sub": str(user_id), 
@@ -44,10 +37,10 @@ def user_from_token(token: str, secret: str) -> dict:
                           algorithms="HS256")
     
     except jwt.ExpiredSignatureError:
-        raise UnauthorizedTokenError("Token expired, please login again.")
+        raise ExpiredToken()
 
     except jwt.InvalidTokenError:
-        raise UnauthorizedTokenError("Unauthorized")
+        raise InvalidToken()
 
     except Exception:
         raise RuntimeError()
