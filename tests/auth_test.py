@@ -17,7 +17,7 @@ def test_register_with_already_used_email(client: FlaskClient, existing_user):
         'password':'password123'
     })
 
-    assert response.status_code == 400
+    assert response.status_code == 409
     response_json = response.get_json()
 
     assert 'message' in response_json
