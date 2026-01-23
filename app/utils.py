@@ -39,20 +39,26 @@ def validate_query_parameters():
     return False, errors
 
 
+from flask import request, jsonify
+import json
+
 def require_json_fields(required: set):
-    """Ensures the request has a JSON with the required fields"""
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if not request.is_json:
-                return jsonify({"message": "Invalid request"}), 400
+            raw = request.get_data(as_text=True)
 
-            request_fields_set = set(request.get_json().keys())
+            try:
+                data = json.loads(raw)
+            except Exception:
+                return jsonify({"message": "Invalid JSON body"}), 400
+
+            request_fields_set = set(data.keys())
             missing_fields = required - request_fields_set
 
             if missing_fields:
                 return jsonify({
-                    "message": "Missing information", 
+                    "message": "Missing information",
                     "details": list(missing_fields)
                 }), 400
 
@@ -60,3 +66,4 @@ def require_json_fields(required: set):
 
         return decorated_function
     return decorator
+

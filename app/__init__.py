@@ -4,6 +4,7 @@ from .extensions import limiter
 from flasgger import Swagger
 from flask_migrate import Migrate
 from .errors import ServiceError
+from werkzeug.exceptions import HTTPException
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -40,6 +41,10 @@ def create_app(config_class = 'app.config.Config') -> Flask:
     def internal_server_error(e):
         return jsonify({"message": "Internal Server Error"}), 500
     
+    @app.errorhandler(HTTPException)
+    def handle_http_exception(e):
+        return jsonify({"message": "Invalid JSON body"}), e.code
+        
     migrate.init_app(app, db)
 
     # Blueprints registration
