@@ -75,7 +75,7 @@ def test_login_with_missing_fields(client: FlaskClient):
     response_json = response.get_json()
 
     assert 'message' in response_json
-    assert response_json['message'] == 'Invalid request'
+    assert response_json['message'] == 'Invalid JSON body'
 
     response = client.post('/login', json={})
     assert response.status_code == 400
