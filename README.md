@@ -24,6 +24,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 ### Documentation & Testing
 - Interactive Swagger documentation (`GET /apidocs`)
 - Automated tests covering authentication, user management, and tasks functionality (`pytest`)
+- pytest-cov for coverage
 
 ### Deployment
 - Run locally or inside a Docker container
@@ -113,6 +114,11 @@ This project uses `pytest` for testing.
 To run tests, simply use the following command in the terminal:
 ```shell
 pytest
+```
+
+For coverage, run
+```shell
+pytest --cov=app
 ```
 
 Tests are located in the `/tests` directory and cover authentication, user management, and task operations.
