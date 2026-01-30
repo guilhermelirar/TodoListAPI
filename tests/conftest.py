@@ -1,13 +1,15 @@
 import pytest
 from app import create_app, db
+from uuid import uuid4
+from app.services import auth_service
 from app.models import User
 import jwt
-from datetime import datetime
-from app.services.auth_service import * 
+from datetime import datetime, timedelta, timezone
 
 @pytest.fixture
 def app():
-    app = create_app('app.config.TestConfig')
+    app = create_app(config_class="app.config.TestConfig")
+
     with app.app_context():
         db.create_all()
 
@@ -16,74 +18,85 @@ def app():
     with app.app_context():
         db.session.remove()
         db.drop_all()
+        db.engine.dispose()
 
 @pytest.fixture
 def client(app):
     return app.test_client()
 
 @pytest.fixture
-def existing_user(app): 
-    new_user: User
-    with app.app_context():
-        db.session.query(User).filter_by(email="existing@email.com").delete()
-        db.session.commit()
+def test_email():
+    """Unique email generator"""
+    return f"test_{uuid4().hex[:8]}@email.com"
 
-        new_user = User("Existing", "existing@email.com", "password123")
+@pytest.fixture
+def existing_user(app, test_email): 
+    with app.app_context():
+        new_user = User("John Doe", test_email, "password123")
         db.session.add(new_user)
         db.session.commit()
         db.session.refresh(new_user)
         
-    return new_user
+    return new_user 
 
 @pytest.fixture
-def existing_user_tokens(existing_user: User):
+def existing_user_tokens(existing_user):
+    """Access and Refresh tokens of valid user"""
     return {
-        "access_token": generate_access_token(existing_user.id),
-        "refresh_token": generate_refresh_token(existing_user.id),
+        "access_token": auth_service.generate_access_token(existing_user.id),
+        "refresh_token": auth_service.generate_refresh_token(existing_user.id)
     }
 
-def generate_expired_token(key, id):
-    return jwt.encode({
-        "exp": datetime.now(tz=timezone.utc) - timedelta(days=30),
-        "sub": str(id), 
-    }, key, algorithm="HS256")
+@pytest.fixture
+def expired_token_generator():
+    def _generate(key, user_id):
+        return jwt.encode({
+            "exp": datetime.now(tz=timezone.utc) - timedelta(days=30),
+            "sub": str(user_id), 
+            "iat": datetime.now(tz=timezone.utc) - timedelta(days=31),
+        }, key, algorithm="HS256")
+    return _generate
 
 @pytest.fixture
-def expired_refresh_token(existing_user: User):
-    return generate_expired_token(REFRESH_TOKEN_SECRET, 
-                                  existing_user.id)
+def expired_refresh_token(existing_user, expired_token_generator):
+    return expired_token_generator(auth_service.REFRESH_TOKEN_SECRET, existing_user.id)
 
 @pytest.fixture
-def valid_refresh_token():
-    return generate_refresh_token(1) 
-
+def valid_refresh_token(existing_user):
+    return auth_service.generate_refresh_token(existing_user.id)
 
 @pytest.fixture
 def alt_valid_access_token():
-    """ Valid access token, but not related to any user """
-    return generate_access_token(-1)
-
+     return auth_service.generate_access_token(-1) 
 
 @pytest.fixture
-def access_token_of_user_with_tasks(existing_user_tokens, app):
-    """ 
-    Extends user creation fixture, creating 
-    two tasks for exibition 
-    """
-    access_token: str =  existing_user_tokens["access_token"]
-    from app.services.task_service import create_task
-    from app.services.auth_service import user_from_access_token
-    user_id = int(user_from_access_token(access_token)["sub"])
-    
-    with app.app_context(): 
-        create_task(user_id,  {
-            "title": "Buy groceries", 
-            "description": "Buy milk, eggs, bread"
-        })
-    
-        create_task(user_id,  {
-            "title": "Pay bills",
-            "description": "Pay electricity and water bills"    
-        })
+def user_id_from_token(existing_user_tokens):
+    """Returns id in the token payload"""
+    payload = auth_service.user_from_access_token(
+        existing_user_tokens["access_token"]
+    )
 
-        return access_token
+    return int(payload["sub"])
+
+@pytest.fixture
+def tasks_creator(app):
+    def _create_tasks(user_id, tasks_data=None):
+        from app.services.task_service import create_task
+        
+        default_tasks = [
+            {"title": "Buy groceries", "description": "Buy milk, eggs, bread"},
+            {"title": "Pay bills", "description": "Pay electricity and water bills"}
+        ]
+        
+        tasks_data = tasks_data or default_tasks
+        
+        with app.app_context():
+            for task_data in tasks_data:
+                create_task(user_id, task_data)
+    
+    return _create_tasks
+
+@pytest.fixture
+def access_token_of_user_with_tasks(existing_user_tokens, user_id_from_token, tasks_creator):
+    tasks_creator(user_id_from_token)
+    return existing_user_tokens["access_token"]
