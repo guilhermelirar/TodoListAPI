@@ -1,6 +1,6 @@
 # TodoListAPI
 RESTful API built with Python and Flask to allow users to manage their to-do list. 
-Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-list-api) from roadmap.sh. For learning purpose. 
+Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-list-api) from roadmap.sh. 
 
 ![To-do List API Project Idea by roadmap.sh](https://assets.roadmap.sh/guest/todo-list-api-bsrdd.png)
 (Image from from the project idea page at roadmap.sh)
@@ -9,100 +9,113 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 
 ## Features
 
-- Create user with `POST /register` endpoint
-- Login with `POST /login` endpoint
-- Create to-do item with `POST /todos` endpoint
-- Update to-do item with `PUT /todos/<int:id>` endpoint
-- Delete to-do item with `DELETE /todos/<int:id>` endpoint
-- Get to-do items in paginated response with `GET /todos/?page=1&limit=10`
-- Interactive documentation with Swagger with `GET /apidocs` endpoint
+### Authentication & Users
+- Register a new user (`POST /register`)
+- Login and receive access & refresh tokens (`POST /login`)
 - Refresh token mechanism for authentication
-- Rate limiting
-- Automated tests with pytest
+- Rate limiting for security
 
---- 
+### Tasks
+- Create a to-do item (`POST /todos`)
+- Update a to-do item (`PUT /todos/<int:id>`)
+- Delete a to-do item (`DELETE /todos/<int:id>`)
+- Get to-do items with pagination (`GET /todos/?page=1&limit=10`)
 
-## Tools used and requirements
-- Python 3+
-- Flask as a web application framework
-- SQLAlchemy as Object Relational Mapper
-- PyJWT for encoding and decoding JSON Web Tokens
-- pytest as test framework
-- Flask-Limiter for rate limiting
-- Flasgger for API documentation with Swagger
-- Flask-Migrate for database migrations
+### Documentation & Testing
+- Interactive Swagger documentation (`GET /apidocs`)
+- Automated tests covering authentication, user management, and tasks functionality (`pytest`)
+
+### Deployment
+- Run locally or inside a Docker container
 
 ---
 
-## How to run
+## Tools & Requirements
+- Python 3+
+- Flask (web framework)
+- SQLAlchemy (ORM)
+- PyJWT (JSON Web Tokens)
+- pytest (testing framework)
+- Flask-Limiter (rate limiting)
+- Flasgger (Swagger API docs)
+- Flask-Migrate (database migrations)
+- Docker & Docker Compose
 
-### 1. Clone this repository
+---
 
-```shell
+## Getting Started
+
+First, Clone this repository
+
+```bash
 git clone https://github.com/guilhermelirar/TodoListAPI.git
 cd TodoListAPI
 ```
 
-### 2. Create and activate a python virtual environment
+### Without Docker
+
+#### 1. Create and activate a python virtual environment
 Create it
 ```shell
-python -m venv .venv
+python -m venv venv
 ```
 Activate it:
-- On Windows:  
+- Windows:  
   ```shell
-  .venv\Scripts\activate
+  venv\Scripts\activate
   ```
 
-- On Linux or Mac:
+- Linux/Mac:
   ```shell
-   source .venv/bin/activate
+   source venv/bin/activate
    ```
 
-### 3. Install dependencies
+#### 2. Install dependencies
 
 Install all dependencies listed in `requirements.txt`.
 ```shell
 pip install -r requirements.txt
 ```
 
-### 4. Run application
+#### 3. Run application 
 
-Before running the application, create the database tables with an initial migration, as follows:
-```shell
-flask db init
-flask db migrate -m "Initial migration"
-flask db upgrade
-```
-
-The application can be run using the `flask run` command or through the `run.py` file as follows:
 ```shell
 python run.py
 ```
-The `/hello` route will only work if `run.py` is used.
 
 ---
+
+### Using Docker
+Make sure Docker and Docker Compose are installed.
+
+```bash
+docker compose up --build
+```
+This will build the containers, install dependencies, and run PostgreSQL as the database automatically.
+
+
+---
+
 
 ## API Documentation
 
-This project includes interactive API documentation powered by **Swagger**, integrated through **Flasgger** (see `requirements.txt`).  
-
-Once the application is running, the documentation will be available at:
+Interactive API documentation is available via Swagger at:
 
 ```/apidocs```
 
-From this interface, you can explore all available endpoints, check request/response schemas, and even test the API directly from your browser.
+You can explore endpoints, see request/response examples, and test the API directly from your browser..
 
 ---
 
-## Tests
-This project uses `pytest` as test framework. 
+## Running Tests
+This project uses `pytest` for testing. 
 
 To run tests, simply use the following command in the terminal:
 ```shell
 pytest
 ```
-Tests are located in the `/tests` directory.
+
+Tests are located in the `/tests` directory and cover authentication, user management, and task operations.
 
 ---
 
