@@ -87,7 +87,12 @@ def is_token_blacklisted(token):
     if not entry:
         return False
 
-    if entry.expires_at < datetime.now(tz=timezone.utc):
+    if entry.expires_at.tzinfo is None:  # Se for naive
+        expires_at_aware = entry.expires_at.replace(tzinfo=timezone.utc)
+    else:
+        expires_at_aware = entry.expires_at
+
+    if expires_at_aware < datetime.now(tz=timezone.utc):
         db.session.delete(entry)
         db.session.commit()
         return False
