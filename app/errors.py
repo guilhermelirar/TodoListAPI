@@ -6,17 +6,19 @@ class ServiceError(Exception):
         
         super().__init__(self.message)
 
-class InvalidCredentials(ServiceError):
-    message = "Invalid credentials"
-    status_code = 400
-
-class ExpiredToken(ServiceError):
-    message = "Token expired, please login again."
-    status_code = 401
-
-class InvalidToken(ServiceError):
+class Unauthorized(ServiceError):
     message = "Unauthorized"
     status_code = 401
+
+class ExpiredToken(Unauthorized):
+    message = "Token expired, you need to log in again."
+
+class InvalidCredentials(ServiceError):
+    message = "Invalid credentials."
+    status_code = 400
+
+class InvalidToken(Unauthorized):
+    message = "Invalid token."
 
 class EmailAlreadyInUse(ServiceError):
     message = "Email already in use"

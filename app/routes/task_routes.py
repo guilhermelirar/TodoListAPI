@@ -3,7 +3,7 @@ from flask import Blueprint, request, Response, jsonify, g
 from app.utils import require_json_fields, validate_query_parameters
 import app.services.task_service as serv
 from app.services.token_service import user_from_access_token 
-from app.utils import limit_requests, get_user_id
+from app.utils import limit_requests, get_jwt
 
 todo_bp = Blueprint('todos', __name__)
 
@@ -63,7 +63,7 @@ def todos() -> tuple[Response, int]:
               type: string
               example: "Invalid request"
     """
-    user_id = get_user_id(request)
+    user_id = user_from_access_token(get_jwt(request))
     created_item_details = serv.create_task(user_id, request.get_json())
     return jsonify(created_item_details), 201
 
@@ -149,8 +149,8 @@ def update_task(id: int):
               type: string
               example: "Task not found"
     """
-
-    new_data = serv.update_task(get_user_id(request), id, request.get_json())
+    user_id = user_from_access_token(get_jwt(request))
+    new_data = serv.update_task(user_id, id, request.get_json())
     
     return jsonify(new_data), 200
 
@@ -200,7 +200,8 @@ def delete_task(id: int) -> tuple[Response, int]:
               type: string
               example: "Task not found"
     """
-    serv.delete_task(get_user_id(request), id)
+    user_id = user_from_access_token(get_jwt(request))
+    serv.delete_task(user_id, id)
     
     return jsonify(), 204
 
@@ -283,7 +284,7 @@ def get_tasks():
                 type: string
                 example: "Invalid value for limit '-1' (should be higher than 0)" 
     """
-    user_id = get_user_id(request)
+    user_id = user_from_access_token(get_jwt(request))
 
     valid_query, errors = validate_query_parameters()
 

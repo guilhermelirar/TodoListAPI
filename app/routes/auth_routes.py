@@ -2,7 +2,7 @@
 from flask import Blueprint, request, Response, jsonify
 from app.services import auth_service
 from app.services import token_service
-from app.utils import require_json_fields, get_user_id
+from app.utils import require_json_fields, get_jwt
 from app.extensions import limiter
 
 # Blueprint for register and login routes
@@ -50,7 +50,7 @@ def refresh() -> tuple[Response, int]:
                 message: "Token expired, please login again"
     """
 
-    user_id = get_user_id(request, "refresh")
+    user_id = token_service.user_from_refresh_token(get_jwt(request))
 
     new_access_token = token_service.generate_access_token(user_id)
 
@@ -122,13 +122,11 @@ def register() -> tuple[Response, int]:
             value:
               message: "Email already in use"
     """
-    new_user_id: int
-    new_user_id = auth_service.create_user(request.get_json())
 
+    new_user_id = auth_service.create_user(request.get_json())
+    
     access_token: str = token_service.generate_access_token(new_user_id)
-    print("New access token issued: ", access_token)
     refresh_token: str = token_service.generate_refresh_token(new_user_id)
-    print("New refresh token issued: ", refresh_token)
 
     return jsonify({
         "access_token": access_token,
@@ -209,14 +207,7 @@ def login() -> tuple[Response, int]:
 @limiter.limit('5 per minute')
 @require_json_fields({"refresh_token"})
 def logout() -> tuple[Response, int]:
-    auth_header = request.headers.get('authorization')
-
-    if not auth_header:
-        return jsonify({
-            "message": "Unauthorized"
-        }), 401
-
-    token = auth_header.split(' ')[1]
+    token = get_jwt(request)
     refresh_token = request.get_json()["refresh_token"]
     
     token_service.blacklist_token(token)
