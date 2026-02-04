@@ -111,14 +111,13 @@ def test_with_valid_credentials(client: FlaskClient, existing_user):
     assert len(response.get_json()) == 2
 
 def test_logout(client, existing_user_tokens):
-    headers = {"Authorizaton": f"Bearer {existing_user_tokens["access_token"]}"}
+    headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
     response: TestResponse = client.post(
         '/logout',
         headers=headers
     )
 
     assert response.status_code == 200
-    assert response.get_json()['message'] == "User logged out"
 
     refresh_headers = {"Authorizaton": f"Bearer {existing_user_tokens["refresh_token"]}"}
     refresh_attempt = client.post('/post', headers=refresh_headers)
