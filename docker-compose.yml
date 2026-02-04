@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:15
@@ -9,17 +11,23 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build: .
-    command: bash -c "flask db upgrade && python run.py"
-
     ports:
       - "5000:5000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/tododb
+      - FLASK_APP=run.py
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    command: python run.py  # SIMPLES assim!
 
 volumes:
   postgres_data:
