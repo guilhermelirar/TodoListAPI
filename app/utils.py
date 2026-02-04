@@ -5,6 +5,8 @@ Utility decorator functions
 from functools import wraps
 from flask import request, jsonify
 from app.extensions import limiter
+from app.services import token_service
+from app.errors import ServiceError, InvalidToken
 
 def limit_requests(limit: str):
     def decorator(f):
@@ -67,3 +69,18 @@ def require_json_fields(required: set):
         return decorated_function
     return decorator
 
+def get_user_id(request):
+    auth_header = request.headers.get('authorization')
+        
+    if not auth_header:
+        raise ServiceError("Unauthorized", 401)
+
+    token = auth_header.split(' ')[1]
+            
+    if token_service.is_token_blacklisted(token):
+        raise InvalidToken()
+
+    data = token_service.user_from_access_token(token)
+    
+    return int(data['sub'])
+            
