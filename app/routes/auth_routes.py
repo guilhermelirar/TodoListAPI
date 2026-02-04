@@ -2,7 +2,7 @@
 from flask import Blueprint, request, Response, jsonify
 from app.services import auth_service
 from app.services import token_service
-from app.utils import require_json_fields
+from app.utils import require_json_fields, get_user_id
 from app.extensions import limiter
 
 # Blueprint for register and login routes
@@ -50,22 +50,9 @@ def refresh() -> tuple[Response, int]:
                 message: "Token expired, please login again"
     """
 
-    headers = request.headers
-    auth_header = headers.get("authorization")
-    if not auth_header:
-        return jsonify({
-            "message": "Unauthorized"
-        }), 401
+    user_id = get_user_id(request, "refresh")
 
-    token = auth_header.split(' ')[1]
-    
-    if token_service.is_token_blacklisted(token):
-        return jsonify({
-            "message": "Unauthorized"
-        }), 401
-
-    data = token_service.user_from_refresh_token(token)
-    new_access_token = token_service.generate_access_token(data["sub"])
+    new_access_token = token_service.generate_access_token(user_id)
 
     return jsonify({
         "token": new_access_token

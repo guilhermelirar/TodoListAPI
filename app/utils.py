@@ -69,7 +69,7 @@ def require_json_fields(required: set):
         return decorated_function
     return decorator
 
-def get_user_id(request):
+def get_user_id(request, type="access"):
     auth_header = request.headers.get('authorization')
         
     if not auth_header:
@@ -80,7 +80,14 @@ def get_user_id(request):
     if token_service.is_token_blacklisted(token):
         raise InvalidToken()
 
-    data = token_service.user_from_access_token(token)
-    
+    data: dict
+    if type == "access":
+        data = token_service.user_from_access_token(token)
+    elif type == "refresh":
+        data = token_service.user_from_refresh_token(token)
+    else:
+        print("Invalid value for 'type'")
+        raise ServiceError("Internal Server Error", 500)
+
     return int(data['sub'])
             
