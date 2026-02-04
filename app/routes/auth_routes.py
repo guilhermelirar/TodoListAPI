@@ -1,14 +1,12 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify
-from app.services import auth_service as serv
+from app.services import auth_service
+from app.services import token_service
 from app.utils import require_json_fields
 from app.extensions import limiter
 
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
-
-# TEMP
-denylist = []
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
@@ -61,13 +59,13 @@ def refresh() -> tuple[Response, int]:
 
     token = auth_header.split(' ')[1]
     
-    if token in denylist:
+    if token_service.is_token_blacklisted(token):
         return jsonify({
             "message": "Unauthorized"
         }), 401
 
-    data = serv.user_from_refresh_token(token)
-    new_access_token = serv.generate_access_token(data["sub"])
+    data = token_service.user_from_refresh_token(token)
+    new_access_token = token_service.generate_access_token(data["sub"])
 
     return jsonify({
         "token": new_access_token
@@ -138,11 +136,11 @@ def register() -> tuple[Response, int]:
               message: "Email already in use"
     """
     new_user_id: int
-    new_user_id = serv.create_user(request.get_json())
+    new_user_id = auth_service.create_user(request.get_json())
 
-    access_token: str = serv.generate_access_token(new_user_id)
+    access_token: str = token_service.generate_access_token(new_user_id)
     print("New access token issued: ", access_token)
-    refresh_token: str = serv.generate_refresh_token(new_user_id)
+    refresh_token: str = token_service.generate_refresh_token(new_user_id)
     print("New refresh token issued: ", refresh_token)
 
     return jsonify({
@@ -206,15 +204,18 @@ def login() -> tuple[Response, int]:
               example: "Invalid credentials"
     """
 
-    tokens = serv.login(request.get_json()["email"], 
+    user_id = auth_service.login(request.get_json()["email"], 
                         request.get_json()["password"])
     
-    if not tokens:
+    if not user_id:
         return jsonify({
             "message": "Invalid credentials"
         }), 404
 
-    return jsonify(tokens), 200
+    return jsonify({
+      "access_token": token_service.generate_access_token(user_id),
+      "refresh_token": token_service.generate_refresh_token(user_id)
+    }), 200
 
 
 @auth_bp.route('/logout', methods=['POST'])
@@ -230,12 +231,9 @@ def logout() -> tuple[Response, int]:
 
     token = auth_header.split(' ')[1]
     refresh_token = request.get_json()["refresh_token"]
-
-    data = serv.user_from_access_token(token)
-    data = serv.user_from_refresh_token(refresh_token)
-
-    denylist.append(token)
-    denylist.append(refresh_token)
+    
+    token_service.blacklist_token(token)
+    token_service.blacklist_token(refresh_token)
 
     return jsonify({
         "message": "Logged out successfully"

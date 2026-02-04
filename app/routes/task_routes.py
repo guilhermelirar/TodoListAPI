@@ -1,8 +1,8 @@
-#app/routes/auth_routes.py
+#app/routes/task_routes.py
 from flask import Blueprint, request, Response, jsonify, g
 from app.utils import require_json_fields, validate_query_parameters
 import app.services.task_service as serv
-from app.services.auth_service import user_from_access_token 
+from app.services.token_service import user_from_access_token 
 from app.utils import limit_requests
 
 todo_bp = Blueprint('todos', __name__)
