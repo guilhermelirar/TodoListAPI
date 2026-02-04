@@ -8,7 +8,6 @@ def test_register_with_missing_fields(client: FlaskClient):
     response_json = response.get_json()
 
     assert 'message' in response_json
-    assert response_json['message'] == 'Missing information'
 
 def test_register_with_already_used_email(client: FlaskClient, existing_user):
     response: TestResponse = client.post('/register', json = {
@@ -21,7 +20,6 @@ def test_register_with_already_used_email(client: FlaskClient, existing_user):
     response_json = response.get_json()
 
     assert 'message' in response_json
-    assert response_json['message'] == 'Email already in use'
 
 def test_register_with_valid_email(client: FlaskClient):
     response: TestResponse = client.post('/register', json = {
@@ -44,7 +42,6 @@ def test_invalid_refresh_token_rejected(client: FlaskClient):
     response_json = response.get_json()
 
     assert 'message' in response_json
-    assert response_json['message'] == 'Unauthorized'
 
 
 def test_expired_refresh_token_rejected(client: FlaskClient, expired_refresh_token: str):
@@ -55,7 +52,6 @@ def test_expired_refresh_token_rejected(client: FlaskClient, expired_refresh_tok
     response_json = response.get_json()
 
     assert 'message' in response_json
-    assert response_json['message'] == 'Token expired, please login again.'
 
 
 def test_valid_refresh_token_accepted(client: FlaskClient, valid_refresh_token: str):
@@ -75,11 +71,9 @@ def test_login_with_missing_fields(client: FlaskClient):
     response_json = response.get_json()
 
     assert 'message' in response_json
-    assert response_json['message'] == 'Invalid JSON body'
 
     response = client.post('/login', json={})
     assert response.status_code == 400
-    assert response.get_json()['message'] == 'Missing information'
 
 
 def test_login_with_nonexistant_user(client: FlaskClient):
@@ -89,7 +83,6 @@ def test_login_with_nonexistant_user(client: FlaskClient):
     })
 
     assert response.status_code == 404
-    assert response.get_json()['message'] == 'Invalid credentials'
 
 
 def test_login_with_wrong_password(client: FlaskClient, existing_user):

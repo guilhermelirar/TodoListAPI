@@ -6,7 +6,7 @@ from functools import wraps
 from flask import request, jsonify
 from app.extensions import limiter
 from app.services import token_service
-from app.errors import ServiceError, InvalidToken
+from app.errors import ServiceError, InvalidToken, Unauthorized
 
 def limit_requests(limit: str):
     def decorator(f):
@@ -69,25 +69,22 @@ def require_json_fields(required: set):
         return decorated_function
     return decorator
 
-def get_user_id(request, type="access"):
+def get_jwt(request) -> str:
+    """
+    Extracts the token from the Response.
+    Raises Unauthorized if no token or headers provided, 
+    or if token is blacklisted
+    """
     auth_header = request.headers.get('authorization')
         
     if not auth_header:
-        raise ServiceError("Unauthorized", 401)
+        raise Unauthorized()
 
     token = auth_header.split(' ')[1]
             
     if token_service.is_token_blacklisted(token):
         raise InvalidToken()
 
-    data: dict
-    if type == "access":
-        data = token_service.user_from_access_token(token)
-    elif type == "refresh":
-        data = token_service.user_from_refresh_token(token)
-    else:
-        print("Invalid value for 'type'")
-        raise ServiceError("Internal Server Error", 500)
+    return token
 
-    return int(data['sub'])
             

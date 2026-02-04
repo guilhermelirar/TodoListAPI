@@ -72,11 +72,11 @@ def alt_valid_access_token():
 @pytest.fixture
 def user_id_from_token(existing_user_tokens):
     """Returns id in the token payload"""
-    payload = token_service.user_from_access_token(
+    id = token_service.user_from_access_token(
         existing_user_tokens["access_token"]
     )
 
-    return int(payload["sub"])
+    return int(id)
 
 @pytest.fixture
 def tasks_creator(app):

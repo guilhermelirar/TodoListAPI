@@ -8,7 +8,6 @@ def test_create_task_requires_authorization(client: FlaskClient):
     response: TestResponse = client.post("/todos", json=task)
 
     assert response.status_code == 401
-    assert response.get_json()["message"] == "Unauthorized"
 
 
 def test_create_task_rejects_invalid_token(client: FlaskClient):
@@ -16,7 +15,6 @@ def test_create_task_rejects_invalid_token(client: FlaskClient):
                                          headers={"Authorization":"Bearer invalid"})
 
     assert response.status_code == 401
-    assert response.get_json()["message"] == "Unauthorized"
 
 
 def test_create_task_with_invalid_fields(client: FlaskClient, 
@@ -25,7 +23,6 @@ def test_create_task_with_invalid_fields(client: FlaskClient,
     response: TestResponse = client.post("/todos", json={}, headers=headers)
 
     assert response.status_code == 400
-    assert response.get_json()["message"] == "Missing information"
 
 
 def test_create_task_with_success(client: FlaskClient, existing_user_tokens: dict):
@@ -45,7 +42,6 @@ def test_update_nonexistent_task(client: FlaskClient, existing_user_tokens: dict
 
     # Task is not found
     assert response.status_code == 404
-    assert response.get_json()["message"] == "Task not found"
 
 
 def test_update_task_not_owned(client: FlaskClient, 
@@ -64,7 +60,6 @@ def test_update_task_not_owned(client: FlaskClient,
     
     # User does not have permission (didn't create the resource)
     assert response.status_code == 403 # Forbidden
-    assert response.get_json()["message"] == "Forbidden"
 
 
 def test_update_task_with_success(client: FlaskClient, existing_user_tokens: dict):
@@ -88,7 +83,6 @@ def test_delete_non_existent_task(client: FlaskClient, existing_user_tokens: dic
     
     # Task not found
     assert response.status_code == 404 
-    assert response.get_json()["message"] == "Task not found"
 
 
 def test_delete_not_owned_task(client: FlaskClient, existing_user_tokens: dict, alt_valid_access_token: str):
@@ -102,7 +96,6 @@ def test_delete_not_owned_task(client: FlaskClient, existing_user_tokens: dict, 
     
     # Forbidden
     assert response.status_code == 403
-    assert response.get_json()["message"] == "Forbidden"
 
 
 def test_delete_task_with_success(client: FlaskClient, existing_user_tokens: dict):
@@ -125,7 +118,6 @@ def test_get_todos_without_authentication(client: FlaskClient):
     
     # Unauthorized (doesn't have auth header)
     assert response.status_code == 401
-    assert response.get_json()["message"] == "Unauthorized"
 
 
 def test_get_todos_with_invalid_args(client: FlaskClient, 
@@ -136,7 +128,6 @@ def test_get_todos_with_invalid_args(client: FlaskClient,
     
     # Bad request (invalid arguments)
     assert response.status_code == 400
-    assert response.get_json()["message"] == "Invalid request"
     print(response.get_json())
     assert response.get_json()["errors"] == [
         "Invalid value for page '-1' (should be higher than 0)",

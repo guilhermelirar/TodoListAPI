@@ -29,11 +29,11 @@ def generate_refresh_token(user_id: int) -> str:
         "exp": exp,
     }, REFRESH_TOKEN_SECRET, algorithm=ALGORITHM)
 
-def user_from_refresh_token(token: str) -> dict:
-    return decode_token(token, REFRESH_TOKEN_SECRET)
+def user_from_refresh_token(token: str) -> int:
+    return int(decode_token(token, REFRESH_TOKEN_SECRET)["sub"])
 
-def user_from_access_token(token: str) -> dict:
-    return decode_token(token, ACCESS_TOKEN_SECRET)
+def user_from_access_token(token: str) -> int:
+    return int(decode_token(token, ACCESS_TOKEN_SECRET)["sub"])
 
 def decode_token(token: str, secret: str) -> dict:
     try:
