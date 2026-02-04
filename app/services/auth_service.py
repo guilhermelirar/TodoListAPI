@@ -32,9 +32,7 @@ def user_from_access_token(token: str) -> dict:
 
 def user_from_token(token: str, secret: str) -> dict:
     try:
-        return jwt.decode(token, 
-                          secret, 
-                          algorithms="HS256")
+        return jwt.decode(token, secret, algorithms="HS256")
     
     except jwt.ExpiredSignatureError:
         raise ExpiredToken()

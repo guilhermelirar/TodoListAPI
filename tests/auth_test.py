@@ -114,12 +114,15 @@ def test_logout(client, existing_user_tokens):
     headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
     response: TestResponse = client.post(
         '/logout',
+        json={
+            "refresh_token": existing_user_tokens["refresh_token"]
+        },
         headers=headers
     )
 
     assert response.status_code == 200
 
-    refresh_headers = {"Authorizaton": f"Bearer {existing_user_tokens["refresh_token"]}"}
-    refresh_attempt = client.post('/post', headers=refresh_headers)
+    refresh_headers = {"Authorization": f"Bearer {existing_user_tokens["refresh_token"]}"}
+    refresh_attempt = client.post('/refresh', headers=refresh_headers)
 
-    assert response.status_code == 401
+    assert refresh_attempt.status_code == 401

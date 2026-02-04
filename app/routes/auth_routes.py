@@ -7,6 +7,8 @@ from app.extensions import limiter
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
 
+# TEMP
+denylist = []
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
@@ -59,6 +61,11 @@ def refresh() -> tuple[Response, int]:
 
     token = auth_header.split(' ')[1]
     
+    if token in denylist:
+        return jsonify({
+            "message": "Unauthorized"
+        }), 401
+
     data = serv.user_from_refresh_token(token)
     new_access_token = serv.generate_access_token(data["sub"])
 
@@ -208,3 +215,28 @@ def login() -> tuple[Response, int]:
         }), 404
 
     return jsonify(tokens), 200
+
+
+@auth_bp.route('/logout', methods=['POST'])
+@limiter.limit('5 per minute')
+@require_json_fields({"refresh_token"})
+def logout() -> tuple[Response, int]:
+    auth_header = request.headers.get('authorization')
+
+    if not auth_header:
+        return jsonify({
+            "message": "Unauthorized"
+        }), 401
+
+    token = auth_header.split(' ')[1]
+    refresh_token = request.get_json()["refresh_token"]
+
+    data = serv.user_from_access_token(token)
+    data = serv.user_from_refresh_token(refresh_token)
+
+    denylist.append(token)
+    denylist.append(refresh_token)
+
+    return jsonify({
+        "message": "Logged out successfully"
+    }), 200
