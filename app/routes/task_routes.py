@@ -3,23 +3,9 @@ from flask import Blueprint, request, Response, jsonify, g
 from app.utils import require_json_fields, validate_query_parameters
 import app.services.task_service as serv
 from app.services.token_service import user_from_access_token 
-from app.utils import limit_requests
+from app.utils import limit_requests, get_user_id
 
 todo_bp = Blueprint('todos', __name__)
-
-@todo_bp.before_request
-def require_authenticated(): 
-    auth_header = request.headers.get('authorization')
-    if not auth_header or len(auth_header.split()) != 2:
-        return jsonify({
-            "message": "Unauthorized"
-        }), 401
-         
-    token = auth_header.split()[1]
-        
-    # Checks if the token is valid
-    user_id = user_from_access_token(token)["sub"]
-    g.user_id = int(user_id)
 
 @todo_bp.route('/todos', methods=['POST'])
 @limit_requests("50 per hour")
@@ -77,7 +63,8 @@ def todos() -> tuple[Response, int]:
               type: string
               example: "Invalid request"
     """
-    created_item_details = serv.create_task(g.get("user_id"), request.get_json())
+    user_id = get_user_id(request)
+    created_item_details = serv.create_task(user_id, request.get_json())
     return jsonify(created_item_details), 201
 
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
@@ -163,7 +150,7 @@ def update_task(id: int):
               example: "Task not found"
     """
 
-    new_data = serv.update_task(g.get("user_id"), id, request.get_json())
+    new_data = serv.update_task(get_user_id(request), id, request.get_json())
     
     return jsonify(new_data), 200
 
@@ -213,7 +200,7 @@ def delete_task(id: int) -> tuple[Response, int]:
               type: string
               example: "Task not found"
     """
-    serv.delete_task(g.get("user_id"), id)
+    serv.delete_task(get_user_id(request), id)
     
     return jsonify(), 204
 
@@ -296,6 +283,7 @@ def get_tasks():
                 type: string
                 example: "Invalid value for limit '-1' (should be higher than 0)" 
     """
+    user_id = get_user_id(request)
 
     valid_query, errors = validate_query_parameters()
 
@@ -308,9 +296,9 @@ def get_tasks():
             "errors": errors
         }), 400
 
-    data = serv.tasks_by_user_id(g.get("user_id"), page, limit)
+    data = serv.tasks_by_user_id(user_id, page, limit)
     
-    total: int = serv.count_tasks_by_user_id(g.get("user_id"))
+    total: int = serv.count_tasks_by_user_id(user_id)
     data_in_page = data[0:limit]
     data_in_dict = [item.to_dict() for item in data_in_page]
 

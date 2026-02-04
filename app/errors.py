@@ -1,8 +1,9 @@
 class ServiceError(Exception):
-    status_code: int = 500
-    message: str = "Internal server error"
+    def __init__(self, message=None, status_code=None):
 
-    def __init__(self):
+        self.message = message or getattr(self, 'message', 'Internal server error')
+        self.status_code = status_code or getattr(self, 'status_code', 500)
+        
         super().__init__(self.message)
 
 class InvalidCredentials(ServiceError):
