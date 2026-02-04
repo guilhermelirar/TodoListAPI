@@ -1,7 +1,7 @@
 import pytest
 from app import create_app, db
 from uuid import uuid4
-from app.services import auth_service
+from app.services import token_service
 from app.models import User
 import jwt
 from datetime import datetime, timedelta, timezone
@@ -43,8 +43,8 @@ def existing_user(app, test_email):
 def existing_user_tokens(existing_user):
     """Access and Refresh tokens of valid user"""
     return {
-        "access_token": auth_service.generate_access_token(existing_user.id),
-        "refresh_token": auth_service.generate_refresh_token(existing_user.id)
+        "access_token": token_service.generate_access_token(existing_user.id),
+        "refresh_token": token_service.generate_refresh_token(existing_user.id)
     }
 
 @pytest.fixture
@@ -59,20 +59,20 @@ def expired_token_generator():
 
 @pytest.fixture
 def expired_refresh_token(existing_user, expired_token_generator):
-    return expired_token_generator(auth_service.REFRESH_TOKEN_SECRET, existing_user.id)
+    return expired_token_generator(token_service.REFRESH_TOKEN_SECRET, existing_user.id)
 
 @pytest.fixture
 def valid_refresh_token(existing_user):
-    return auth_service.generate_refresh_token(existing_user.id)
+    return token_service.generate_refresh_token(existing_user.id)
 
 @pytest.fixture
 def alt_valid_access_token():
-     return auth_service.generate_access_token(-1) 
+     return token_service.generate_access_token(-1) 
 
 @pytest.fixture
 def user_id_from_token(existing_user_tokens):
     """Returns id in the token payload"""
-    payload = auth_service.user_from_access_token(
+    payload = token_service.user_from_access_token(
         existing_user_tokens["access_token"]
     )
 
