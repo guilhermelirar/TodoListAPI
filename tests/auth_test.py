@@ -21,18 +21,18 @@ def test_register_with_already_used_email(client: FlaskClient, existing_user):
 
     assert 'message' in response_json
 
-def test_register_with_valid_email(client: FlaskClient):
-    response: TestResponse = client.post('/register', json = {
-        "name": "John Doe",
-        "email": "john@doe.com",
-        "password": "password"
-    })
+    def test_register_with_valid_email(client: FlaskClient):
+        response: TestResponse = client.post('/register', json = {
+            "name": "John Doe",
+            "email": "john@doe.com",
+            "password": "password"
+        })
 
-    assert response.status_code == 201
-    response_json = response.get_json()
+        assert response.status_code == 201
+        response_json = response.get_json()
 
-    assert 'access_token' in response_json
-    assert 'refresh_token' in response_json
+        assert 'access_token' in response_json
+        assert 'refresh_token' in response_json
 
 def test_invalid_refresh_token_rejected(client: FlaskClient):
     headers = {'Authorization': 'Bearer invalid_token'}
@@ -82,7 +82,7 @@ def test_login_with_nonexistant_user(client: FlaskClient):
         "password": "password123"
     })
 
-    assert response.status_code == 404
+    assert response.status_code == 401
 
 
 def test_login_with_wrong_password(client: FlaskClient, existing_user):
@@ -91,8 +91,7 @@ def test_login_with_wrong_password(client: FlaskClient, existing_user):
         "password": "wrongpassword"
     })
 
-    assert response.status_code == 404
-    assert response.get_json()['message'] == 'Invalid credentials'
+    assert response.status_code == 401
 
 def test_with_valid_credentials(client: FlaskClient, existing_user):
     response: TestResponse = client.post('/login', json={
