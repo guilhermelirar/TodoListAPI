@@ -1,12 +1,14 @@
 #app/routes/auth_routes.py
-from flask import Blueprint, request, Response, jsonify
-from app.services import auth_service
+from flask import Blueprint, request, Response, jsonify, current_app
 from app.services import token_service
 from app.utils import require_json_fields, get_jwt
 from app.extensions import limiter
 
 # Blueprint for register and login routes
 auth_bp = Blueprint('auth', __name__) 
+
+def account_service():
+    return current_app.account_service
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
@@ -123,7 +125,10 @@ def register() -> tuple[Response, int]:
               message: "Email already in use"
     """
 
-    new_user_id = auth_service.create_user(request.get_json())
+    data = request.get_json()
+    print(data)
+    new_user_id = current_app.account_service.create_user(**data)
+
     
     access_token: str = token_service.generate_access_token(new_user_id)
     refresh_token: str = token_service.generate_refresh_token(new_user_id)
@@ -189,14 +194,9 @@ def login() -> tuple[Response, int]:
               example: "Invalid credentials"
     """
 
-    user_id = auth_service.login(request.get_json()["email"], 
+    user_id = account_service().get_user_id(request.get_json()["email"], 
                         request.get_json()["password"])
-    
-    if not user_id:
-        return jsonify({
-            "message": "Invalid credentials"
-        }), 404
-
+  
     return jsonify({
       "access_token": token_service.generate_access_token(user_id),
       "refresh_token": token_service.generate_refresh_token(user_id)

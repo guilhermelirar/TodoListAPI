@@ -22,6 +22,8 @@ def register_services(app: Flask):
         app.config["ACCESS_TOKEN_SECRET"], 
         app.config["REFRESH_TOKEN_SECRET"]
     )
+    from app.services.auth_service import AccountService
+    app.account_service = AccountService(db_session=db.session)
 
 def register_blueprints(app):
     from app.routes import auth_bp, todo_bp
