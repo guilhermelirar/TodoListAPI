@@ -13,9 +13,8 @@ class Unauthorized(ServiceError):
 class ExpiredToken(Unauthorized):
     message = "Token expired, you need to log in again."
 
-class InvalidCredentials(ServiceError):
+class InvalidCredentials(Unauthorized):
     message = "Invalid credentials."
-    status_code = 400
 
 class InvalidToken(Unauthorized):
     message = "Invalid token."
