@@ -10,7 +10,7 @@ ACCESS_TOKEN_SECRET = None
 REFRESH_TOKEN_SECRET = None
 ALGORITHM = "HS256"
 
-def init_token_service(access_secret, refresh_secret):
+def init(access_secret, refresh_secret):
     global ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
     ACCESS_TOKEN_SECRET = access_secret
     REFRESH_TOKEN_SECRET = refresh_secret
