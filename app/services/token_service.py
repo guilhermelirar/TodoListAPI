@@ -87,7 +87,7 @@ def is_token_blacklisted(token):
     if not entry:
         return False
 
-    if entry.expires_at.tzinfo is None:  # Se for naive
+    if entry.expires_at.tzinfo is None:
         expires_at_aware = entry.expires_at.replace(tzinfo=timezone.utc)
     else:
         expires_at_aware = entry.expires_at

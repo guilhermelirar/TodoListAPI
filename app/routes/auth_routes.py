@@ -11,12 +11,12 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
     """
-    Receive acce ess token
+    Receive acceess token
     ---
     tags:
       - Auth
     parameters:
-      - name: Authorization e
+      - name: Authorization
         in: header
         description: Bearer refresh token
         required: true
@@ -207,6 +207,45 @@ def login() -> tuple[Response, int]:
 @limiter.limit('5 per minute')
 @require_json_fields({"refresh_token"})
 def logout() -> tuple[Response, int]:
+    """
+    Log out from device: blacklist access and refresh tokens
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer access token
+        required: true
+        type: string
+        example: Bearer valid_access_token
+
+    responses:
+      200:
+        description: Successfull logout
+        schema:
+          type: object
+          properties:
+            messsage:
+              type: string
+              example: "Logged out successfully"
+
+      401:
+        description: Unauthorized due to invalid, missing or expired token
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Unauthorized"
+        examples:
+          invalid_token:
+            value:
+                message: "Unauthorized"
+          expired_token:
+            value:
+                message: "Token expired, please login again"
+    """
     token = get_jwt(request)
     refresh_token = request.get_json()["refresh_token"]
     
