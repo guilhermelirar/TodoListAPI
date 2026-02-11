@@ -1,7 +1,7 @@
 #app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify, current_app
 from app.services import token_service
-from app.utils import require_json_fields, get_jwt
+from app.utils import require_json_fields, login_required, get_jwt
 from app.extensions import limiter
 
 # Blueprint for register and login routes

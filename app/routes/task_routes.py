@@ -1,8 +1,7 @@
 #app/routes/task_routes.py
 from flask import Blueprint, request, Response, jsonify, current_app
 from app.utils import require_json_fields, validate_query_parameters
-from app.services.token_service import user_from_access_token 
-from app.utils import limit_requests, get_jwt
+from app.utils import limit_requests, login_required
 
 todo_bp = Blueprint('todos', __name__)
 
@@ -15,7 +14,8 @@ def service() -> TaskService:
 @todo_bp.route('/todos', methods=['POST'])
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
-def todos() -> tuple[Response, int]:
+@login_required
+def todos(user_id) -> tuple[Response, int]:
     """
     Create a new task
     ---
@@ -68,7 +68,6 @@ def todos() -> tuple[Response, int]:
               type: string
               example: "Invalid request"
     """
-    user_id = user_from_access_token(get_jwt(request))
     data = request.get_json()
     created_item_details = service().create_task(
         user_id, 
@@ -80,7 +79,8 @@ def todos() -> tuple[Response, int]:
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
 @limit_requests("50 per hour")
 @require_json_fields(required={"title", "description"})
-def update_task(id: int):
+@login_required
+def update_task(user_id: int, id: int):
     """
     Update an existing task
     ---
@@ -159,14 +159,14 @@ def update_task(id: int):
               type: string
               example: "Task not found"
     """
-    user_id = user_from_access_token(get_jwt(request))
     new_data = service().update_task(user_id, id, request.get_json())
     
     return jsonify(new_data), 200
 
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])
 @limit_requests("50 per hour")
-def delete_task(id: int) -> tuple[Response, int]:
+@login_required
+def delete_task(user_id: int, id: int) -> tuple[Response, int]:
     """
     Delete an existing task
     ---
@@ -210,7 +210,6 @@ def delete_task(id: int) -> tuple[Response, int]:
               type: string
               example: "Task not found"
     """
-    user_id = user_from_access_token(get_jwt(request))
     service().delete_task(user_id, id)
     
     return jsonify(), 204
@@ -218,7 +217,8 @@ def delete_task(id: int) -> tuple[Response, int]:
 
 @todo_bp.route('/todos', methods=['GET'])
 @limit_requests("500 per hour")
-def get_tasks():
+@login_required
+def get_tasks(user_id: int):
     """
     Get list of todos with pagination
     ---
@@ -294,7 +294,6 @@ def get_tasks():
                 type: string
                 example: "Invalid value for limit '-1' (should be higher than 0)" 
     """
-    user_id = user_from_access_token(get_jwt(request))
 
     valid_query, errors = validate_query_parameters()
 

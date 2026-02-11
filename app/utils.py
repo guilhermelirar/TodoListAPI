@@ -87,4 +87,9 @@ def get_jwt(request) -> str:
 
     return token
 
-            
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        user_id = token_service.user_from_access_token(get_jwt(request))
+        return f(user_id=user_id, *args, **kwargs)
+    return wrapper
