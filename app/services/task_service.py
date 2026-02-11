@@ -8,16 +8,17 @@ class TaskService():
     def __init__(self, session):
         self.session = session
 
-    def create_task(self, user_id: int, data: dict):    
-        title = data.get("title")
+    def create_task(self, user_id: int, title: str, description: str = None):    
         if not title:
             raise TitleEmpty()
 
+        new_task: Task
         try:
             new_task = Task(
                 user_id=user_id, 
                 title=title, 
-                description=data.get("description"))
+                description=description
+            )
 
             self.session.add(new_task)
             self.session.commit()

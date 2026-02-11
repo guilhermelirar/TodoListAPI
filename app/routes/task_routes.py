@@ -6,8 +6,11 @@ from app.utils import limit_requests, get_jwt
 
 todo_bp = Blueprint('todos', __name__)
 
-def service():
-  return current_app.task_service
+from app.services.task_service import TaskService
+
+def service() -> TaskService:
+    return current_app.task_service
+
 
 @todo_bp.route('/todos', methods=['POST'])
 @limit_requests("50 per hour")
@@ -66,7 +69,12 @@ def todos() -> tuple[Response, int]:
               example: "Invalid request"
     """
     user_id = user_from_access_token(get_jwt(request))
-    created_item_details = service().create_task(user_id, request.get_json())
+    data = request.get_json()
+    created_item_details = service().create_task(
+        user_id, 
+        data.get("title"),
+        data.get("description"),
+    )
     return jsonify(created_item_details), 201
 
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])

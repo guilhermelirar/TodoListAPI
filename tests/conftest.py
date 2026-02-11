@@ -92,7 +92,7 @@ def tasks_creator(app):
         
         with app.app_context():
             for task_data in tasks_data:
-                create_task(user_id, task_data)
+                create_task(user_id, task_data.get("title"), task_data.get("description"))
     
     return _create_tasks
 
