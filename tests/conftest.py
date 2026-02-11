@@ -81,7 +81,7 @@ def user_id_from_token(existing_user_tokens):
 @pytest.fixture
 def tasks_creator(app):
     def _create_tasks(user_id, tasks_data=None):
-        from app.services.task_service import create_task
+        create_task = app.task_service.create_task
         
         default_tasks = [
             {"title": "Buy groceries", "description": "Buy milk, eggs, bread"},

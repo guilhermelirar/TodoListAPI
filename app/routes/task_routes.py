@@ -1,11 +1,13 @@
 #app/routes/task_routes.py
-from flask import Blueprint, request, Response, jsonify, g
+from flask import Blueprint, request, Response, jsonify, current_app
 from app.utils import require_json_fields, validate_query_parameters
-import app.services.task_service as serv
 from app.services.token_service import user_from_access_token 
 from app.utils import limit_requests, get_jwt
 
 todo_bp = Blueprint('todos', __name__)
+
+def service():
+  return current_app.task_service
 
 @todo_bp.route('/todos', methods=['POST'])
 @limit_requests("50 per hour")
@@ -64,7 +66,7 @@ def todos() -> tuple[Response, int]:
               example: "Invalid request"
     """
     user_id = user_from_access_token(get_jwt(request))
-    created_item_details = serv.create_task(user_id, request.get_json())
+    created_item_details = service().create_task(user_id, request.get_json())
     return jsonify(created_item_details), 201
 
 @todo_bp.route("/todos/<int:id>", methods=['PUT'])
@@ -150,7 +152,7 @@ def update_task(id: int):
               example: "Task not found"
     """
     user_id = user_from_access_token(get_jwt(request))
-    new_data = serv.update_task(user_id, id, request.get_json())
+    new_data = service().update_task(user_id, id, request.get_json())
     
     return jsonify(new_data), 200
 
@@ -201,7 +203,7 @@ def delete_task(id: int) -> tuple[Response, int]:
               example: "Task not found"
     """
     user_id = user_from_access_token(get_jwt(request))
-    serv.delete_task(user_id, id)
+    service().delete_task(user_id, id)
     
     return jsonify(), 204
 
@@ -297,9 +299,9 @@ def get_tasks():
             "errors": errors
         }), 400
 
-    data = serv.tasks_by_user_id(user_id, page, limit)
+    data = service().tasks_by_user_id(user_id, page, limit)
     
-    total: int = serv.count_tasks_by_user_id(user_id)
+    total: int = service().count_tasks_by_user_id(user_id)
     data_in_page = data[0:limit]
     data_in_dict = [item.to_dict() for item in data_in_page]
 

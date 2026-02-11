@@ -4,88 +4,77 @@ from app.models import Task
 from app import db
 from app.errors import *
 
-def get_task_for_modification(user_id: int, task_id: int) -> Task:
-    """
-    Fetch task from database using task_id, for further modification
-    by other functions (update and delete). Raise exceptions
-    if not found (TaskNotFoundError), or if user_id does not match
-    with the resource owner (TaskPermissionError).
-    """
-    task = db.session.query(Task)\
-    .filter(Task.id == task_id)\
-    .with_for_update()\
-    .first()
+class TaskService():
+    def __init__(self, session):
+        self.session = session
 
-    if not task:
-        raise TaskNotFound()
+    def create_task(self, user_id: int, data: dict):    
+        title = data.get("title")
+        if not title:
+            raise TitleEmpty()
 
-    if task.user_id != user_id:
-        raise Forbidden()
+        try:
+            new_task = Task(
+                user_id=user_id, 
+                title=title, 
+                description=data.get("description"))
 
-    return task
+            self.session.add(new_task)
+            self.session.commit()
 
+        except IntegrityError:
+            self.session.rollback()
+            raise UserNotFound()
 
-def create_task(user_id: int, data):
-    new_task: Task
-   
-    title = data.get("title")
-    if not title:
-        raise TitleEmpty()
+        except:
+            self.session.rollback()
+    
+        return new_task.to_dict()
 
-    try:
-        new_task = Task(
-            user_id=user_id, 
-            title=title, 
-            description=data.get("description"))
+    def get_task(self, id: int) -> Task:
+        task = self.session.query(Task)\
+            .filter(Task.id == id)\
+            .with_for_update()\
+            .first()
 
-        db.session.add(new_task)
-        db.session.commit()
+        if not task:
+            raise TaskNotFound()
 
-    except IntegrityError:
-        db.session.rollback()
-        raise UserNotFound()
+        return task
 
-    except:
-        db.session.rollback()
-  
-    return new_task.to_dict()
+    def update_task(self, user_id: int, task_id, data: dict) -> dict:
+        task = self.get_task(task_id)
 
+        if task.user_id != user_id:
+            raise Forbidden()
 
-def update_task(user_id: int, task_id, data: dict) -> dict:
-    """ 
-    Updates task title and description. Doesn't handle
-    exceptions raised by get_task_for_modification
-    """
-    task = get_task_for_modification(user_id, task_id)
+        task.title = data["title"]
+        task.description = data["description"]
+        updated = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description
+        }
+        self.session.commit()
+        return updated
 
-    task.title = data["title"]
-    task.description = data["description"]
-    updated = {
-        "id": task.id,
-        "title": task.title,
-        "description": task.description
-    }
-    db.session.commit()
-    return updated
+    def delete_task(self, user_id: int, task_id: int):
+        task = self.get_task(task_id)
 
+        if task.user_id != user_id:
+            raise Forbidden()
 
-def delete_task(user_id: int, task_id: int):
-    """ 
-    Deletes a task from database. Doesn't handle
-    exceptions raised by get_task_for_modification
-    """
-    task = get_task_for_modification(user_id, task_id)
-    db.session.delete(task)
-    db.session.commit()
+        self.session.delete(task)
+        self.session.commit()
 
 
-def count_tasks_by_user_id(user_id: int):
-   return db.session.query(Task).filter(Task.user_id == user_id).count()    
+    def count_tasks_by_user_id(self, user_id: int):
+        return self.session.query(Task).filter(Task.user_id == user_id).count()    
 
 
-def tasks_by_user_id(user_id: int, page: int, limit: int):
-    return db.session.query(Task)\
-        .filter(Task.user_id == user_id)\
-        .limit(limit)\
-        .offset((page - 1) * limit)\
-        .all()
+    def tasks_by_user_id(self, user_id: int, page: int, limit: int):
+        return self.session.query(Task)\
+            .filter(Task.user_id == user_id)\
+            .limit(limit)\
+            .offset((page - 1) * limit)\
+            .all()

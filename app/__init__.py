@@ -17,13 +17,17 @@ def register_extensions(app: Flask):
     Swagger(app, template={...})
 
 def register_services(app: Flask):
+    from app.services.auth_service import AccountService
+    from app.services.task_service import TaskService
     from app.services import token_service
+    
     token_service.init(
         app.config["ACCESS_TOKEN_SECRET"], 
         app.config["REFRESH_TOKEN_SECRET"]
     )
-    from app.services.auth_service import AccountService
+    
     app.account_service = AccountService(db_session=db.session)
+    app.task_service = TaskService(session=db.session)
 
 def register_blueprints(app):
     from app.routes import auth_bp, todo_bp
