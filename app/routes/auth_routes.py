@@ -1,6 +1,6 @@
 # app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify, current_app
-from app.utils import require_json_fields, get_jwt
+from app.utils import require_json_fields, get_jwt, login_required
 from app.extensions import limiter
 
 auth_bp = Blueprint('auth', __name__)
@@ -226,7 +226,6 @@ def logout() -> tuple[Response, int]:
         example: Bearer valid_access_token
       - name: refresh_token
         in: body
-        description: Required information to login
         required: true
         schema:
           type: object
@@ -268,3 +267,55 @@ def logout() -> tuple[Response, int]:
     return jsonify({
         "message": "Logged out successfully"
     }), 200
+
+
+@auth_bp.route('/user', methods=['DELETE'])
+@limiter.limit("5 per minute")
+@require_json_fields({"password"})
+@login_required
+def delete(user_id: int):
+    """
+    Delete user account
+    ---
+    tags:
+      - Account
+    parameters:
+      - name: Authorization
+        in: header
+        description: Bearer access token
+        required: true
+        type: string
+        example: Bearer valid_access_token
+      - name: password
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            password:
+              type: string
+
+    responses:
+      204:
+        description: Successful deletion
+
+      401:
+        description: Unauthorized due to invalid, missing or expired token
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Unauthorized"
+        examples:
+          invalid_token:
+            value:
+                message: "Unauthorized"
+          expired_token:
+            value:
+                message: "Token expired, please login again"
+    """
+    service = current_app.account_service
+    service.delete_self(user_id, request.get_json().get("password"))
+
+    return "", 204

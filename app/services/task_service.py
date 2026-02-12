@@ -27,15 +27,15 @@ class TaskService():
             self.session.rollback()
             raise UserNotFound()
 
-        except:
+        except Exception:
             self.session.rollback()
-    
+            raise
+
         return new_task.to_dict()
 
     def get_task(self, id: int) -> Task:
         task = self.session.query(Task)\
             .filter(Task.id == id)\
-            .with_for_update()\
             .first()
 
         if not task:
