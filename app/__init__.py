@@ -13,7 +13,21 @@ def register_extensions(app: Flask):
     db.init_app(app)
     migrate.init_app(app, db)
     limiter.init_app(app)
-    Swagger(app, template={...})
+
+    swagger_template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "Todo List API",
+            "description": "API Documentation",
+            "version": "1.0.0"
+        },
+        "basePath": "/",
+        "schemes": ["http"],
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+    }
+
+    Swagger(app, template=swagger_template)
 
 
 def init_services(app: Flask):

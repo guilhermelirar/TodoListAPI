@@ -224,6 +224,15 @@ def logout() -> tuple[Response, int]:
         required: true
         type: string
         example: Bearer valid_access_token
+      - name: refresh_token
+        in: body
+        description: Required information to login
+        required: true
+        schema:
+          type: object
+          properties:
+            refresh_token:
+              type: string
 
     responses:
       200:

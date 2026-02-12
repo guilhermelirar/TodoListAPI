@@ -78,7 +78,7 @@ def get_jwt(request) -> str:
     token_service = current_app.token_service
 
     if token_service.is_token_blacklisted(token):
-        raise InvalidToken()
+        raise InvalidToken("Blacklisted Token")
 
     return token
 
