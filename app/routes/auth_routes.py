@@ -1,19 +1,15 @@
-#app/routes/auth_routes.py
+# app/routes/auth_routes.py
 from flask import Blueprint, request, Response, jsonify, current_app
-from app.services import token_service
-from app.utils import require_json_fields, login_required, get_jwt
+from app.utils import require_json_fields, get_jwt
 from app.extensions import limiter
 
-# Blueprint for register and login routes
-auth_bp = Blueprint('auth', __name__) 
+auth_bp = Blueprint('auth', __name__)
 
-def account_service():
-    return current_app.account_service
 
 @auth_bp.route('/refresh', methods=['POST'])
 def refresh() -> tuple[Response, int]:
     """
-    Receive acceess token
+    Receive access token
     ---
     tags:
       - Auth
@@ -27,7 +23,7 @@ def refresh() -> tuple[Response, int]:
 
     responses:
       200:
-        description: Successfull access token generation
+        description: Successful access token generation
         schema:
           type: object
           properties:
@@ -51,14 +47,19 @@ def refresh() -> tuple[Response, int]:
             value:
                 message: "Token expired, please login again"
     """
+    token_service = current_app.token_service
 
-    user_id = token_service.user_from_refresh_token(get_jwt(request))
-
-    new_access_token = token_service.generate_access_token(user_id)
+    user_id = int(
+        token_service.decode_jwt(
+            get_jwt(request),
+            type="refresh"
+        )["sub"]
+    )
 
     return jsonify({
-        "token": new_access_token
+        "token": token_service.new_access_token(user_id)
     }), 200
+
 
 @auth_bp.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
@@ -124,18 +125,16 @@ def register() -> tuple[Response, int]:
             value:
               message: "Email already in use"
     """
+    token_service = current_app.token_service
+    account_service = current_app.account_service
 
     data = request.get_json()
-    print(data)
-    new_user_id = current_app.account_service.create_user(**data)
 
-    
-    access_token: str = token_service.generate_access_token(new_user_id)
-    refresh_token: str = token_service.generate_refresh_token(new_user_id)
+    new_user_id = account_service.create_user(**data)
 
     return jsonify({
-        "access_token": access_token,
-        "refresh_token": refresh_token
+        "access_token": token_service.new_access_token(new_user_id),
+        "refresh_token": token_service.new_refresh_token(new_user_id)
     }), 201
 
 
@@ -165,7 +164,7 @@ def login() -> tuple[Response, int]:
 
     responses:
       201:
-        description: Successfull login
+        description: Successful login
         schema:
           type: object
           properties:
@@ -185,7 +184,7 @@ def login() -> tuple[Response, int]:
               type: string
               example: "Invalid request"
       404:
-        description: User with provided credentials does not exist 
+        description: User with provided credentials does not exist
         schema:
           type: object
           properties:
@@ -193,18 +192,24 @@ def login() -> tuple[Response, int]:
               type: string
               example: "Invalid credentials"
     """
+    token_service = current_app.token_service
+    account_service = current_app.account_service
 
-    user_id = account_service().get_user_id(request.get_json()["email"], 
-                        request.get_json()["password"])
-  
+    data = request.get_json()
+
+    user_id = account_service.get_user_id(
+        data["email"],
+        data["password"]
+    )
+
     return jsonify({
-      "access_token": token_service.generate_access_token(user_id),
-      "refresh_token": token_service.generate_refresh_token(user_id)
+        "access_token": token_service.new_access_token(user_id),
+        "refresh_token": token_service.new_refresh_token(user_id)
     }), 200
 
 
 @auth_bp.route('/logout', methods=['POST'])
-@limiter.limit('5 per minute')
+@limiter.limit("5 per minute")
 @require_json_fields({"refresh_token"})
 def logout() -> tuple[Response, int]:
     """
@@ -222,11 +227,11 @@ def logout() -> tuple[Response, int]:
 
     responses:
       200:
-        description: Successfull logout
+        description: Successful logout
         schema:
           type: object
           properties:
-            messsage:
+            message:
               type: string
               example: "Logged out successfully"
 
@@ -246,11 +251,10 @@ def logout() -> tuple[Response, int]:
             value:
                 message: "Token expired, please login again"
     """
-    token = get_jwt(request)
+    token_service = current_app.token_service
+
     refresh_token = request.get_json()["refresh_token"]
-    
-    token_service.blacklist_token(token)
-    token_service.blacklist_token(refresh_token)
+    token_service.blacklist_refresh_token(refresh_token)
 
     return jsonify({
         "message": "Logged out successfully"

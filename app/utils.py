@@ -1,12 +1,12 @@
-#app/utils.py 
 """
 Utility decorator functions
 """
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from app.extensions import limiter
-from app.services import token_service
-from app.errors import ServiceError, InvalidToken, Unauthorized
+from app.errors import InvalidToken, Unauthorized
+import json
+
 
 def limit_requests(limit: str):
     def decorator(f):
@@ -17,12 +17,13 @@ def limit_requests(limit: str):
         return wrapped
     return decorator
 
+
 def validate_query_parameters():
     errors = []
     allowed_params = {"page", "limit"}
     received_params = set(request.args.keys())
     extra_params = received_params - allowed_params
-    
+
     page = int(request.args.get("page", "1"))
     limit = int(request.args.get("limit", "10"))
 
@@ -31,18 +32,15 @@ def validate_query_parameters():
 
     if limit < 1:
         errors.append(f"Invalid value for limit '{limit}' (should be higher than 0)")
-    
+
     if extra_params:
         errors.append(f"Unexpected parameters: {', '.join(extra_params)}")
 
-    if errors == []:
+    if not errors:
         return True, None
-    
+
     return False, errors
 
-
-from flask import request, jsonify
-import json
 
 def require_json_fields(required: set):
     def decorator(f):
@@ -55,13 +53,12 @@ def require_json_fields(required: set):
             except Exception:
                 return jsonify({"message": "Invalid JSON body"}), 400
 
-            request_fields_set = set(data.keys())
-            missing_fields = required - request_fields_set
+            missing_fields = required - set(data.keys())
 
             if missing_fields:
                 return jsonify({
                     "message": "Missing information",
-                    "details": list(missing_fields)
+                    "details": list(missing_fields),
                 }), 400
 
             return f(*args, **kwargs)
@@ -69,27 +66,29 @@ def require_json_fields(required: set):
         return decorated_function
     return decorator
 
+
 def get_jwt(request) -> str:
-    """
-    Extracts the token from the Response.
-    Raises Unauthorized if no token or headers provided, 
-    or if token is blacklisted
-    """
-    auth_header = request.headers.get('authorization')
-        
+    auth_header = request.headers.get("Authorization")
+
     if not auth_header:
         raise Unauthorized()
 
-    token = auth_header.split(' ')[1]
-            
+    token = auth_header.split(" ")[1]
+
+    token_service = current_app.token_service
+
     if token_service.is_token_blacklisted(token):
         raise InvalidToken()
 
     return token
 
+
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        user_id = token_service.user_from_access_token(get_jwt(request))
-        return f(user_id=user_id, *args, **kwargs)
+        token_service = current_app.token_service
+        user_id = token_service.decode_jwt(
+            get_jwt(request)
+        )["sub"]
+        return f(user_id=int(user_id), *args, **kwargs)
     return wrapper
