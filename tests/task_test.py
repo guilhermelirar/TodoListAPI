@@ -185,3 +185,11 @@ def test_mark_task_done(client, existing_user_tokens):
     updated_task = next(t for t in tasks if t["id"] == task_id)
 
     assert updated_task["status"] == "done"
+
+
+def test_update_task_tags_replaces_old_tags(task_service, task):
+    task_service._update_task_tags(task, ["work"])
+    task_service._update_task_tags(task, ["urgent"])
+
+    tags = task_service.get_task(task.id).tags
+    assert [t.name for t in tags] == ["urgent"]
