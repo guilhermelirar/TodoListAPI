@@ -75,9 +75,8 @@ def create_todo(user_id: int) -> tuple[Response, int]:
     return jsonify(created_item), 201
 
 
-@todo_bp.route("/todos/<int:id>", methods=['PUT'])
+@todo_bp.route("/todos/<int:id>", methods=['PATCH'])
 @limit_requests("50 per hour")
-@require_json_fields(required={"title", "description"})
 @login_required
 def update_task(user_id: int, id: int) -> tuple[Response, int]:
     """
@@ -114,23 +113,13 @@ def update_task(user_id: int, id: int) -> tuple[Response, int]:
             description:
               type: string
               example: "Buy milk, eggs, bread and cheese"
+            status:
+              type: "done" | "todo"
+              example: "done"
 
     responses:
-      200:
-        description: To do item updated successfully. New information is returned
-        schema:
-          type: object
-          properties:
-            id:
-              type: integer
-              example: 1
-            title:
-              type: string
-              example: "Buy groceries"
-            description:
-              type: string
-              example: "Buy milk, eggs, bread and cheese"
-
+      204:
+        description: To do item updated successfully.
       400:
         description: Bad request due to missing or invalid data
       403:
@@ -138,6 +127,7 @@ def update_task(user_id: int, id: int) -> tuple[Response, int]:
       404:
         description: Resource was not found
     """
+
     task_service = current_app.task_service
 
     updated_data = task_service.update_task(
@@ -146,7 +136,7 @@ def update_task(user_id: int, id: int) -> tuple[Response, int]:
         request.get_json()
     )
 
-    return jsonify(updated_data), 200
+    return jsonify(updated_data), 204
 
 
 @todo_bp.route('/todos/<int:id>', methods=['DELETE'])

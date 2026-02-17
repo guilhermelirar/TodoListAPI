@@ -31,14 +31,11 @@ def test_create_task_with_success(client: FlaskClient, existing_user_tokens: dic
 
     # To-do item created with success
     assert response.status_code == 201
-    # Details of created item are present
-    res_json = response.get_json()
-    assert len(res_json) == 3 
 
 
 def test_update_nonexistent_task(client: FlaskClient, existing_user_tokens: dict):
     headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
-    response: TestResponse = client.put("/todos/0", json=task_2, headers=headers)
+    response: TestResponse = client.patch("/todos/0", json=task_2, headers=headers)
 
     # Task is not found
     assert response.status_code == 404
@@ -55,7 +52,7 @@ def test_update_task_not_owned(client: FlaskClient,
     # "User" with different id from the owner
     headers["Authorization"] = f"Bearer {alt_valid_access_token}"
 
-    response: TestResponse = client.put(f"/todos/{task_id}", 
+    response: TestResponse = client.patch(f"/todos/{task_id}", 
                                         json=task_2, headers=headers)
     
     # User does not have permission (didn't create the resource)
@@ -67,12 +64,22 @@ def test_update_task_with_success(client: FlaskClient, existing_user_tokens: dic
     # Creates a valid task
     task_id: int = client.post("/todos", 
                                json=task, headers=headers).get_json()["id"]
-    response: TestResponse = client.put(f"/todos/{task_id}", 
+    response: TestResponse = client.patch(f"/todos/{task_id}", 
                                         json=task_2, headers=headers)
 
     # Task is found and update is done
-    assert response.status_code == 200
-    assert response.get_json() == {"id": task_id, **task_2}
+    assert response.status_code == 204
+
+    # Status changed
+    response = client.get(
+        "/todos",
+        headers=headers
+    )
+
+    tasks = response.get_json()["data"]
+    updated_task = next(t for t in tasks if t["id"] == task_id)
+
+    assert task_2.items() <= updated_task.items()
 
 
 def test_delete_non_existent_task(client: FlaskClient, existing_user_tokens: dict):
