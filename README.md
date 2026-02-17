@@ -12,6 +12,7 @@ Inspired by the [Todo List API Project Idea](https://roadmap.sh/projects/todo-li
 ### Authentication & Users
 - Register a new user (`POST /register`)
 - Login and receive access & refresh tokens (`POST /login`)
+- Delete existing user (`DELETE /user`)
 - Refresh token mechanism for authentication
 - Rate limiting for security
 
