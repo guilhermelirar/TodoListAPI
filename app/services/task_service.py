@@ -1,6 +1,6 @@
 # app/services/task_service.py 
 from sqlalchemy.exc import IntegrityError
-from app.models import Task
+from app.models.task import Task, TaskStatus
 from app import db
 from app.errors import *
 
@@ -43,21 +43,32 @@ class TaskService():
 
         return task
 
-    def update_task(self, user_id: int, task_id, data: dict) -> dict:
+    def update_task(self, user_id: int, task_id: int, data: dict) -> dict:
         task = self.get_task(task_id)
 
         if task.user_id != user_id:
             raise Forbidden()
 
-        task.title = data["title"]
-        task.description = data["description"]
-        updated = {
-            "id": task.id,
-            "title": task.title,
-            "description": task.description
+        allowed_fields = {
+            "title": str,
+            "description": str,
+            "status": str,
         }
+
+        for field, value in data.items():
+            if field not in allowed_fields:
+                raise ServiceError(f"Field '{field}' not allowed", 400)
+
+            if field == "status":
+                try:
+                    value = TaskStatus(value)
+                except ValueError:
+                    raise ServiceError(f"Status '{value}' not allowed", 400)
+
+            setattr(task, field, value)
+
         self.session.commit()
-        return updated
+        return task.to_dict()
 
     def delete_task(self, user_id: int, task_id: int):
         task = self.get_task(task_id)
