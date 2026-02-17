@@ -9,6 +9,12 @@ class TaskStatus(str, Enum):
     DOING = "doing"
     DONE = "done"
 
+task_tags = db.Table(
+    "task_tags",
+    db.Column("task_id", ForeignKey("tasks.id"), primary_key=True),
+    db.Column("tag_id", ForeignKey("tags.id"), primary_key=True),
+)
+
 class Task(db.Model):
     __tablename__ = "tasks"
 
@@ -24,6 +30,12 @@ class Task(db.Model):
     )
 
     user: Mapped["User"] = relationship(back_populates="tasks")
+
+    tags: Mapped[list["Tag"]] = relationship(
+        "Tag",
+        secondary=task_tags,
+        backref="tasks"
+    )
 
     def to_dict(self) -> dict:
         return {
