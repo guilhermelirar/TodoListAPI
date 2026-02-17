@@ -114,7 +114,8 @@ def update_task(user_id: int, id: int) -> tuple[Response, int]:
               type: string
               example: "Buy milk, eggs, bread and cheese"
             status:
-              type: "done" | "todo"
+              description: should be either "done", "todo" or "doing"
+              type: string
               example: "done"
 
     responses:
