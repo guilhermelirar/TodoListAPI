@@ -148,3 +148,33 @@ def test_get_todos_with_valid_request(client: FlaskClient,
     assert response.get_json()["page"] == 1
     assert response.get_json()["limit"] == 10
     assert response.get_json()["total"] == 2
+
+
+def test_mark_task_done(client, existing_user_tokens):
+    headers = {"Authorization": f"Bearer {existing_user_tokens['access_token']}"}
+
+    task_id = client.post(
+        "/todos", 
+        json=task, 
+        headers=headers
+    ).get_json()["id"]
+
+    response = client.patch(
+        f"/todos/{task_id}",
+        headers=headers,
+        json={"status": "done"}
+    )
+
+    # Resource updated
+    assert response.status_code == 204
+
+    # Status changed
+    response = client.get(
+        "/todos",
+        headers=headers
+    )
+
+    tasks = response.get_json()["data"]
+    updated_task = next(t for t in tasks if t["id"] == task_id)
+
+    assert updated_task["status"] == "done"
