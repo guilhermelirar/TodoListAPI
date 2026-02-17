@@ -1,7 +1,13 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app import db
 from app.models import User
+from enum import Enum
+
+class TaskStatus(str, Enum):
+    TODO = "todo"
+    DOING = "doing"
+    DONE = "done"
 
 class Task(db.Model):
     __tablename__ = "tasks"
@@ -10,6 +16,12 @@ class Task(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str] = mapped_column(nullable=True)
+    
+    status: Mapped[TaskStatus] = mapped_column(
+        SQLEnum(TaskStatus, name="task_status"),
+        nullable=False,
+        default=TaskStatus.TODO
+    )
 
     user: Mapped["User"] = relationship(back_populates="tasks")
 
@@ -17,10 +29,12 @@ class Task(db.Model):
         return {
             "id": self.id,
             "title": self.title,
-            "description": self.description
+            "description": self.description,
+            "status": self.status.value
         }
 
     def __init__(self, user_id: int, title: str, description: str = ""):
         self.user_id = user_id
         self.title = title
         self.description = description
+        self.status = TaskStatus.TODO
