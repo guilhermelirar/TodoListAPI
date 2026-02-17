@@ -70,7 +70,7 @@ def create_todo(user_id: int) -> tuple[Response, int]:
         user_id,
         data["title"],
         data["description"],
-    )
+    ).to_dict()
 
     return jsonify(created_item), 201
 
